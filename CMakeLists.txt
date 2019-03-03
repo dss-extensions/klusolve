@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 project(klusolve)
-SET(CMAKE_DEBUG_POSTFIX "d")
+SET(CMAKE_DEBUG_POSTFIX "")
 SET(CMAKE_RELEASE_PREFIX "")
 
 SET(USE_SYSTEM_SUITESPARSE ON CACHE BOOL "Use system SuiteSparse.")
@@ -12,7 +12,7 @@ SET(USE_SYSTEM_EIGEN3 ON CACHE BOOL "Use system Eigen3.")
 
 if ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
     SET(KLUSOLVE_OUT_DIR_SUFFIX "x64")
-else () 
+else ()
     SET(KLUSOLVE_OUT_DIR_SUFFIX "x86")
 endif ()
 
@@ -28,12 +28,19 @@ endif ()
 
 
 SET(KLUSOLVE_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/${KLUSOLVE_OUT_DIR_PREFIX}_${KLUSOLVE_OUT_DIR_SUFFIX}")
-SET(KLUSOLVE_SRC 
-    src/KLUSolve.cpp 
-    src/KLUSystem.cpp 
+SET(KLUSOLVE_SRC
+    src/KLUSolve.cpp
+    src/KLUSystem.cpp
     src/csz_stuff.c
     src/extra.cpp
 )
+
+# Best results for GCC and MSVC
+if (NOT MSVC)
+    add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
+else()
+    add_definitions("/DNDEBUG /O2 /Ot /GS- /openmp")
+endif()
 
 # Handle Eigen3
 # Eigen3 is a header-only library, no building necessary
@@ -58,7 +65,7 @@ else ()
         SET(EIGEN3_DIR "${CMAKE_BINARY_DIR}/eigen-eigen-323c052e1731")
     ENDIF()
     include_directories(${EIGEN3_DIR})
-endif () 
+endif ()
 
 
 if (USE_SYSTEM_SUITESPARSE)
@@ -81,7 +88,7 @@ if (USE_SYSTEM_SUITESPARSE)
     endif ()
 
     if (NOT MSVC)
-        if (APPLE) 
+        if (APPLE)
             # MacOS doesn't support linking statically with system libraries
             set(CMAKE_SHARED_LINKER_FLAGS "-fPIC")
         else()
@@ -91,7 +98,7 @@ if (USE_SYSTEM_SUITESPARSE)
     else()
         add_definitions(-DNCOMPLEX)
     endif()
-    
+
     add_library(shared SHARED ${KLUSOLVE_SRC} src/klusolve.def)
     target_link_libraries(shared ${KLU_LIBRARIES})
     include_directories(${SUITESPARSE_INCLUDE_DIR})
@@ -112,8 +119,8 @@ else ()
         ENDIF()
         SET(SUITESPARSE_DIR "${CMAKE_BINARY_DIR}/SuiteSparse")
     ENDIF()
-    
-    
+
+
     include_directories(
         "${SUITESPARSE_DIR}/AMD/Include/"
         "${SUITESPARSE_DIR}/COLAMD/Include/"
@@ -189,11 +196,11 @@ else ()
     # CSparse
     file(GLOB CSPARSE_SRC "${SUITESPARSE_DIR}/CSparse/Source/*.c")
     add_definitions("-Dcsi=int")
-    
+
     #KLU
     set(KLU_SRC "${SUITESPARSE_DIR}/KLU/Source")
 
-    set(KLU_TEMPLATE_SRC 
+    set(KLU_TEMPLATE_SRC
         "${KLU_SRC}/klu.c"
         "${KLU_SRC}/klu_diagnostics.c"
         "${KLU_SRC}/klu_dump.c"
@@ -227,15 +234,16 @@ else ()
     set_source_files_properties(${KLU_Z} PROPERTIES COMPILE_FLAGS "-DCOMPLEX -DDINT")
     set_source_files_properties(${KLU_ZL} PROPERTIES COMPILE_FLAGS "-DCOMPLEX -DDLONG")
     set_source_files_properties(${KLU_DL} PROPERTIES COMPILE_FLAGS "-DDLONG")
-        
-    set(KLU_COMMON_SRC 
+
+    set(KLU_COMMON_SRC
         "${KLU_SRC}/klu_analyze.c"
         "${KLU_SRC}/klu_analyze_given.c"
         "${KLU_SRC}/klu_defaults.c"
         "${KLU_SRC}/klu_free_symbolic.c"
-        "${KLU_SRC}/klu_memory.c")
-        
-        
+        "${KLU_SRC}/klu_memory.c"
+    )
+
+
     foreach(libsrc ${KLU_COMMON_SRC})
         GET_FILENAME_COMPONENT(SRC "${libsrc}" NAME_WE)
         set(DST_I "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_int.c")
@@ -247,9 +255,9 @@ else ()
     endforeach(libsrc)
 
     set_source_files_properties(${KLU_L} PROPERTIES COMPILE_FLAGS "-DDLONG")
-    
+
     if (NOT MSVC)
-        if (APPLE) 
+        if (APPLE)
             # MacOS doesn't support linking statically with system libraries
             set(CMAKE_SHARED_LINKER_FLAGS "-fPIC")
         else()
@@ -259,7 +267,7 @@ else ()
     else()
         add_definitions(-DNCOMPLEX)
     endif()
-    
+
     SET(SUITESPARSE_SRC "${SUITESPARSE_DIR}/SuiteSparse_config/SuiteSparse_config.c" ${KLU_I} ${KLU_L} ${KLU_D} ${KLU_DL} ${KLU_Z} ${KLU_ZL} ${BTF_I} ${BTF_L} ${COLAMD_I} ${COLAMD_L} ${COLAMD_GLOBAL} ${AMD_I} ${AMD_L} ${AMD_GLOBAL} ${CSPARSE_SRC})
     add_library(shared SHARED ${KLUSOLVE_SRC} ${SUITESPARSE_SRC} src/klusolve.def)
     target_link_libraries(shared ${KLU_LIBRARIES})
@@ -273,7 +281,6 @@ else ()
         "${SUITESPARSE_DIR}/SuiteSparse_config/Include"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/"
     )
-    message(STATUS "Include: ${CMAKE_CURRENT_SOURCE_DIR}/include/")
 endif (USE_SYSTEM_SUITESPARSE)
 
 if (MSVC)
