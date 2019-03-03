@@ -4,13 +4,17 @@ clone_folder: c:\projects\klusolve
   # - c:\projects\eigen3.tar.gz
 build_script:
 - cmd: >-
+    ren c:\cygwin C:\cygwin.disabled
+    
+    ren c:\cygwin64 C:\cygwin64.disabled
+    
     mkdir c:\projects\klusolve\build
 
     cd c:\projects\klusolve\build
 
     set path=%ADD_THIS_TO_PATH%;%path%
 
-    cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%" %CMAKE_EXTRA%
+    cmake .. -DCMAKE_IGNORE_PATH="C:/Program Files/Git/usr/bin" -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%" %CMAKE_EXTRA%
 
     cmake --build . --config Release
 
