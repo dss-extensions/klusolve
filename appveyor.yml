@@ -1,19 +1,32 @@
-image: Visual Studio 2017
-clone_folder: c:\klusolve
+clone_folder: c:\projects\klusolve
+# cache:
+  # - c:\projects\SuiteSparse-5.3.0.tar.gz
+  # - c:\projects\eigen3.tar.gz
 build_script:
 - cmd: >-
-    mkdir c:\klusolve\build
+    mkdir c:\projects\klusolve\build
 
-    cd c:\klusolve\build
+    cd c:\projects\klusolve\build
 
-    cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"Visual Studio 15 2017"
+    cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%"
 
     cmake --build . --config Release
 
-    cd c:\klusolve
+    cd c:\projects\klusolve
     
     dir /s lib
     
+environment:
+  matrix:
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      # CMAKE_GENERATOR: Visual Studio 9 2008
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      # CMAKE_GENERATOR: Visual Studio 9 2008 Win64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GENERATOR: Visual Studio 15 2017
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GENERATOR: Visual Studio 15 2017 Win64
+
 # deploy:
 # - provider: GitHub
   # auth_token:

@@ -1,3 +1,13 @@
+#ifdef _MSC_VER
+#   if _MSC_VER <= 1500
+#       include <stdint_compat.h>
+#   else
+#       include <cstdint>
+#   endif
+#else
+#    include <cstdint>
+#endif
+
 #include <complex>
 #include <Eigen/Eigen>
 
