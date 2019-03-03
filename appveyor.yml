@@ -8,7 +8,9 @@ build_script:
 
     cd c:\projects\klusolve\build
 
-    cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%"
+    set path=%ADD_THIS_TO_PATH%;%path%
+
+    cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%" %CMAKE_EXTRA%
 
     cmake --build . --config Release
 
@@ -26,6 +28,13 @@ environment:
       CMAKE_GENERATOR: Visual Studio 15 2017
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       CMAKE_GENERATOR: Visual Studio 15 2017 Win64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      ADD_THIS_TO_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\bin
+      CMAKE_GENERATOR: MinGW Makefiles
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      ADD_THIS_TO_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\bin
+      CMAKE_GENERATOR: MinGW Makefiles
+      CMAKE_EXTRA: -DCMAKE_CXX_COMPILER_ARG1=-m32 -DCMAKE_C_COMPILER_ARG1=-m32
 
 # deploy:
 # - provider: GitHub
