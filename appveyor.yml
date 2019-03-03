@@ -6,9 +6,9 @@ build_script:
 - cmd: >-
     ren c:\cygwin cygwin.disabled
     
-    ren C:\MinGW MinGW.disabled
-    
     ren c:\cygwin64 cygwin64.disabled
+
+    dir c:\ /o
     
     mkdir c:\projects\klusolve\build
 
@@ -35,10 +35,10 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       CMAKE_GENERATOR: Visual Studio 15 2017 Win64
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      ADD_THIS_TO_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\bin
+      ADD_THIS_TO_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\bin;C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
       CMAKE_GENERATOR: MinGW Makefiles
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      ADD_THIS_TO_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\bin
+      ADD_THIS_TO_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\bin;C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
       CMAKE_GENERATOR: MinGW Makefiles
       CMAKE_EXTRA: -DCMAKE_CXX_COMPILER_ARG1=-m32 -DCMAKE_C_COMPILER_ARG1=-m32
 
