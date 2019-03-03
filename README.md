@@ -1,3 +1,8 @@
+[![Travis-CI: Linux/macOS build Status](https://travis-ci.com/dss-extensions/klusolve.svg?branch=master)](https://travis-ci.com/dss-extensions/klusolve)
+[![AppVeyor: Windows build status](https://ci.appveyor.com/api/projects/status/k87v4udm4paiykap/branch/master?svg=true)](https://ci.appveyor.com/project/PMeira/klusolve/branch/master)
+
+---
+
 # DSS-Extensions: KLUSolve
 
 This is a modified version of KLUSolve, see the original at [SourceForge](https://sourceforge.net/p/klusolve/code/HEAD/tree/). As explicit in `LICENSE`, this work uses the same license, LGPL 2.1 or later.
