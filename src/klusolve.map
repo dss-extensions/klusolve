@@ -1,0 +1,26 @@
+LIBKLUSOLVE_1.1 {
+global:
+    NewSparseSet;
+    GetFlops;
+    ZeroSparseSet;
+    FactorSparseMatrix;
+    SolveSparseSet;
+    DeleteSparseSet;
+    AddMatrixElement;
+    GetSize;
+    SetLogFile;
+    GetNNZ;
+    GetSparseNNZ;
+    GetSingularCol;
+    GetRCond;
+    GetRGrowth;
+    GetCondEst;
+    GetMatrixElement;
+    AddPrimitiveMatrix;
+    GetCompressedMatrix;
+    GetTripletMatrix;
+    FindIslands;
+    mvmult;
+local:
+    *;
+};

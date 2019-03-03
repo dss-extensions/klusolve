@@ -1,0 +1,25 @@
+image: Visual Studio 2017
+clone_folder: c:\klusolve
+build_script:
+- cmd: >-
+    mkdir c:\klusolve\build
+
+    cd c:\klusolve\build
+
+    cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"Visual Studio 15 2017"
+
+    cmake --build . --config Release
+
+    cd c:\klusolve
+    
+    dir /s lib
+    
+# deploy:
+# - provider: GitHub
+  # auth_token:
+    # secure: 1eYtGksCZWZwjLNNMl5yjUoCDdEg9z1/6DdnR7fSU2wWUcKkp0Hpy0K2uvVYYEWK
+  # artifact: /.*\.zip/
+  # draft: true
+  # force_update: true
+  # on:
+    # APPVEYOR_REPO_TAG: true
