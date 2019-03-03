@@ -7,8 +7,10 @@ build_script:
     ren c:\cygwin cygwin.disabled
     
     ren c:\cygwin64 cygwin64.disabled
+    
+    ren "C:\Program Files\Git" Git.disabled
 
-    dir c:\ /o
+    mklink /D c:\mingw C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
     
     mkdir c:\projects\klusolve\build
 
@@ -16,7 +18,7 @@ build_script:
 
     set path=%ADD_THIS_TO_PATH%;%path%
 
-    cmake .. -DCMAKE_IGNORE_PATH="C:/Program Files/Git/usr/bin" -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%" %CMAKE_EXTRA%
+    cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%" %CMAKE_EXTRA%
 
     cmake --build . --config Release
 
