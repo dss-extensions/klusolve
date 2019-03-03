@@ -9,9 +9,9 @@ build_script:
     ren c:\cygwin64 cygwin64.disabled
     
     ren "C:\Program Files\Git" Git.disabled
-
-    mklink /D c:\mingw C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
     
+    if exist c:\mingw ( ren c:\mingw mingw.disabled )
+
     mkdir c:\projects\klusolve\build
 
     cd c:\projects\klusolve\build
