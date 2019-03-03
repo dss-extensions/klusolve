@@ -4,9 +4,9 @@ clone_folder: c:\projects\klusolve
   # - c:\projects\eigen3.tar.gz
 build_script:
 - cmd: >-
-    ren c:\cygwin C:\cygwin.disabled
+    ren c:\cygwin cygwin.disabled
     
-    ren c:\cygwin64 C:\cygwin64.disabled
+    ren c:\cygwin64 cygwin64.disabled
     
     mkdir c:\projects\klusolve\build
 
