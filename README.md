@@ -1,4 +1,4 @@
-# DSS-Extensions: KLUSolve1
+# DSS-Extensions: KLUSolve
 
 This is a modified version of KLUSolve, see the original at [SourceForge](https://sourceforge.net/p/klusolve/code/HEAD/tree/). As explicit in `LICENSE`, this work uses the same license, LGPL 2.1 or later.
 
@@ -11,7 +11,7 @@ Changes include:
 
 The original README is updated and follows.
 
-==========================================================================
+---
 
 KLU, Copyright (C) 2004-2013, University of Florida
 by Timothy A. Davis and Ekanathan Palamadai.
@@ -29,7 +29,7 @@ Copyright (C) 2004-2007, University of Florida
 
 CZSparse, Copyright (c) 2008, EnerNex Corporation. All rights reserved.
 
-==========================================================================
+---
 
 KLUSolve, Copyright (c) 2008, EnerNex Corporation
 Copyright (c) 2017-2019, Paulo Meira
@@ -41,7 +41,7 @@ lgpl_2_1.txt in this directory). For an example of use, see the OpenDSS
 project at https://sf.net/p/electricdss or the DSS C-API library
 at https://github.com/dss-extensions/dss_capi
 
-==========================================================================
+---
 
 KLUSolve is based on the KLU, CSparse, and supporting libraries developed
 by Timothy A. Davis and his students, which are also licensed under LGPL 
@@ -61,7 +61,7 @@ Contact: davis at tamu dot edu, or
 Reference Book: "Direct Methods for Sparse Linear Systems," Timothy A. Davis,
 SIAM, Philadelphia, 2006.
 
-==========================================================================
+---
 
 [Eigen](http://eigen.tuxfamily.org/) is Free Software. Starting from the 3.1.1 version, it is licensed under the MPL2, which is a simple weak copyleft license. Common questions about the MPL2 are answered in the official [MPL2 FAQ](http://www.mozilla.org/MPL/2.0/FAQ.html).
 
