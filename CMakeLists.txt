@@ -39,7 +39,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set (CMAKE_CXX_STANDARD 11)
         if (MINGW)
             set_source_files_properties(src/KLUSolve.cpp src/KLUSystem.cpp PROPERTIES COMPILE_FLAGS "-D_COMPLEX_DEFINED")
-        endif
+        endif()
     endif()
 endif()
 
