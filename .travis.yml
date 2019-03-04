@@ -5,7 +5,10 @@ matrix:
     - name: "linux_x64"
       os: linux
       sudo: required
-      env: DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc
+      env: 
+        - DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc
+        - KLUSOLVE_OS=linux
+        - KLUSOLVE_ARCH=x64
       services:
         - docker
       install:
@@ -19,11 +22,15 @@ matrix:
         - mv eigen-eigen-323c052e1731 ..
         - docker run --rm -v `pwd`/..:/io -e TRAVIS_TAG="${TRAVIS_TAG}" $DOCKER_IMAGE bash /io/klusolve/ci/build_linux_x64.sh
         - ls -lR lib
+        - bash ci/pack_travis.sh
         
     - name: "linux_x86"
       os: linux
       sudo: required
-      env: DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc_i686
+      env: 
+        - DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc_i686
+        - KLUSOLVE_OS=linux
+        - KLUSOLVE_ARCH=x86
       services:
         - docker
       install:
@@ -37,9 +44,14 @@ matrix:
         - mv eigen-eigen-323c052e1731 ..
         - docker run --rm -v `pwd`/..:/io -e TRAVIS_TAG="${TRAVIS_TAG}" $DOCKER_IMAGE bash /io/klusolve/ci/build_linux_x86.sh
         - ls -lR lib
+        - bash ci/pack_travis.sh
         
     - name: "osx_x64"
       os: osx
+      env: 
+        - DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc
+        - KLUSOLVE_OS=darwin
+        - KLUSOLVE_ARCH=x64
       install: true
       script: 
         - mkdir build
@@ -49,15 +61,16 @@ matrix:
         - cd ..
         - file lib/darwin_x64/libklusolve.dylib
         - ls -lR lib
+        - bash ci/pack_travis.sh
 
-# deploy:
-    # provider: releases
-    # api_key:
-        # secure: EdLk19gG9FW/lhutyOI7EwMpSHBjUJTpk/mriX0CzgthzTbxThm+V/VzqIH5CTnVhbe7yqczvD006aAb2Yivhp+Ic9jSths49kLV2OXW1cf4SBf7nJkiGAJvyrGgq9VmTdtB1YP21dvWOKUHaVyZo3A5W7l4sas6OGtFDa6kNpfBGvBj7kDJv/aklqJq7AsJUlT7oyhzYawlZGBxQzBwgNdd0LHjTBlR9PgrCAb7pEkTko/ZMBwIq4wBFEBcF8YsdFt33EOog+HtXEy91kSJhCJi137b/AilWRHlOE0KnSnVRDW42cr1eRwIN7o5q935z/bpZPSq4qAgQkCojI5awOTBcpdOTTs6rUjIMv8d++PHf/RCPDBeNGeZH2V7/RosmTZs+pyW9KtPAlX0E5jaasuahlsrEV4hrdUZNAKZ7HjqpbTrLwJtWBW/r2Xo8GvrJu7gAG1x1iP29ebNrVvAoYh8TwMwhEMFmxz51ckxxRzyUpmsQljDt7/Ge7p+tCNh1y3FEAHzk0l73qGX3tBEWylChmEAPtifMJ7B33oywlOnYr1wKpdELeO2ShsSvk5L5lfymYN+/v0yoWR2nLK8yYhttvfxWQlZ7azrbC4+obUbkaFd6tw4jYyyP+S08rkKIj6roUdf4KjK+C0AQMxPqGeYw/W7Xx0sHZCOpCyDl0w=
-    # file_glob: true
-    # file: release/*
-    # draft: true
-    # skip_cleanup: true
-    # on:
-        # repo: dss-extensions/klusolve
-        # tags: true
+deploy:
+    provider: releases
+    api_key:
+        secure: Zaxa30lrRXT2MsFWoiu8RrXiHAdiR3k/51IGB0uPEPFNtjTSS0gh//YRtbi9zQIuWKCO3Ogejksi/mczk8JFMeBKLn5AkWKL+/fvXJpwjD/vrfVu20aW0MRhNGwK8XK5HF1hFldoAxqzWJewjVwZjaKmOXo2dJJcyC1/fOxjiz348aVS/fDBYpufuAs6frHvx4ZcCK9qfNQzI8SuFoUmLCmrzzEXi/AoF/KIrsuLLQWpFKZvecUx435if+WY7Cs0xYvMA+SyPT7fbt4Fjmt4U1dsZeLQHGDUIF9gSiOH6lNCKe0mexls4nHi+6QFAczIxS8JxsHA+k6x5pV9hvvED3EO6Xh4uAeWI+JsmrdMvvvP02IfBeGInoTkGp8t3TYfwzun3W3W5AofT5xdtvvZDWGyi5ekbkqt95+JWtciB2giSlsmkJxgv3mcILmMTGauKtzz3/vBSX+HllCIUNwGXq1PhW57u4qS0gyob+xfM9kM0aGY5sjT3kVEXZoiZbdbkQFBZT8xaJllRjUZZQ/I+XSvcbAAvrrAqk6Yp6RZaLytbur6mRFJD1s4cc8YfcBtmBA4umzsrXov8xID7st5/C7dHIUO+Mxw813EedykRZXEB43pNNWcQZZjSY8GJSowdBULR1EPZiSADANK4AVz7l/LNClrDwzKRz0OcujjFJw=
+    file_glob: true
+    file: release/*
+    draft: true
+    skip_cleanup: true
+    on:
+        repo: dss-extensions/klusolve
+        tags: true

@@ -3,36 +3,38 @@ clone_folder: c:\projects\klusolve
   # - c:\projects\SuiteSparse-5.3.0.tar.gz
   # - c:\projects\eigen3.tar.gz
 build_script:
-- cmd: >-
-    mkdir c:\projects\klusolve\build
-
-    cd c:\projects\klusolve\build
-
-    cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%"
-
-    cmake --build . --config Release
-
-    cd c:\projects\klusolve
-    
-    dir /s lib
-    
+- cmd: call ci\build_appveyor.bat
 environment:
   matrix:
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-      # CMAKE_GENERATOR: Visual Studio 9 2008
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-      # CMAKE_GENERATOR: Visual Studio 9 2008 Win64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      KLUSOLVE_USE_MINGW: 1
+      CMAKE_GENERATOR: MinGW Makefiles
+      ADD_THIS_TO_PATH: C:\MinGW\bin
+      CMAKE_EXTRA: -DCMAKE_CXX_COMPILER_ARG1=-m32 -DCMAKE_C_COMPILER_ARG1=-m32
+      KLUSOLVE_COMPILER: gcc5.3
+      KLUSOLVE_ARCH: x86
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      KLUSOLVE_USE_MINGW_W64: 1
+      CMAKE_GENERATOR: MinGW Makefiles
+      ADD_THIS_TO_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin
+      KLUSOLVE_PACKAGE_NAME: klusolve-win_x86-gcc8.1
+      KLUSOLVE_COMPILER: gcc8.1
+      KLUSOLVE_ARCH: x64
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       CMAKE_GENERATOR: Visual Studio 15 2017
+      KLUSOLVE_COMPILER: msvc2017
+      KLUSOLVE_ARCH: x86
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       CMAKE_GENERATOR: Visual Studio 15 2017 Win64
+      KLUSOLVE_COMPILER: msvc2017
+      KLUSOLVE_ARCH: x64
 
-# deploy:
-# - provider: GitHub
-  # auth_token:
-    # secure: 1eYtGksCZWZwjLNNMl5yjUoCDdEg9z1/6DdnR7fSU2wWUcKkp0Hpy0K2uvVYYEWK
-  # artifact: /.*\.zip/
-  # draft: true
-  # force_update: true
-  # on:
-    # APPVEYOR_REPO_TAG: true
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: 1eYtGksCZWZwjLNNMl5yjUoCDdEg9z1/6DdnR7fSU2wWUcKkp0Hpy0K2uvVYYEWK
+  artifact: /.*\.zip/
+  draft: true
+  force_update: true
+  on:
+    APPVEYOR_REPO_TAG: true
