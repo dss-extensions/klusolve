@@ -26,12 +26,6 @@ else ()
     MESSAGE(FATAL_ERROR "Unsupported system? ${CMAKE_SYSTEM_NAME}" )
 endif ()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.4)
-        set (CMAKE_CXX_STANDARD 11)
-    endif()
-endif()
-
 SET(KLUSOLVE_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/${KLUSOLVE_OUT_DIR_PREFIX}_${KLUSOLVE_OUT_DIR_SUFFIX}")
 SET(KLUSOLVE_SRC
     src/KLUSolve.cpp
@@ -39,6 +33,15 @@ SET(KLUSOLVE_SRC
     src/csz_stuff.c
     src/extra.cpp
 )
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.4)
+        set (CMAKE_CXX_STANDARD 11)
+        if (MINGW)
+            set_source_files_properties(src/KLUSolve.cpp src/KLUSystem.cpp PROPERTIES COMPILE_FLAGS "-D_COMPLEX_DEFINED")
+        endif
+    endif()
+endif()
 
 # Best results for GCC and MSVC
 if (NOT MSVC)
