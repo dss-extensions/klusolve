@@ -14,6 +14,12 @@ build_script:
 
     mklink /D c:\mingw C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
     
+    echo PATH=%PATH%
+    
+    echo cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%" %CMAKE_EXTRA%
+    
+    dir c:\mingw /s
+    
     mkdir c:\projects\klusolve\build
 
     cd c:\projects\klusolve\build
