@@ -8,7 +8,7 @@
 
 #ifndef _COMPLEX_DEFINED
 #define _COMPLEX_DEFINED
-#if (__GNUC__ && (__GNUC__ > 5)) || (!__GNUC__)
+#if (__GNUC__ && (__GNUC__ > 5)) || !DEFINED(__GNUC__)
 typedef struct _complex {double x, y;} complex;
 #endif
 #endif
