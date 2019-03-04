@@ -38,6 +38,9 @@ SET(KLUSOLVE_SRC
 # Best results for GCC and MSVC
 if (NOT MSVC)
     add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
+    if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+        set_source_files_properties("src/KLUSolve.cpp" "src/KLUSystem.cpp" PROPERTIES COMPILE_FLAGS "-D_COMPLEX_DEFINED")
+    endif()
 else()
     add_definitions("/DNDEBUG /O2 /Ot /GS- /openmp")
 endif()
