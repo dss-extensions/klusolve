@@ -92,17 +92,19 @@ if (USE_SYSTEM_SUITESPARSE)
         message(FATAL_ERROR "KLU header not found. Please ensure SuiteSparse development package is properly installed.")
     endif ()
 
+
     if (NOT MSVC)
+        if (NOT MINGW)
+            SET(FPIC "-fPIC")
+        endif ()
         if (APPLE)
             # MacOS doesn't support linking statically with system libraries
             set(CMAKE_SHARED_LINKER_FLAGS "-fPIC")
         else()
-            set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++ -fPIC -Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/src/klusolve.map\"")
+            set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++ ${FPIC} -Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/src/klusolve.map\"")
         endif()
-        add_definitions(-DNCOMPLEX -fPIC)
-    else()
-        add_definitions(-DNCOMPLEX)
     endif()
+    add_definitions(-DNCOMPLEX)
 
     add_library(shared SHARED ${KLUSOLVE_SRC} src/klusolve.def)
     target_link_libraries(shared ${KLU_LIBRARIES})
@@ -304,4 +306,3 @@ if (MSVC)
     set_target_properties(shared PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
     set_target_properties(shared PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
 endif ()
-
