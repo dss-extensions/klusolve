@@ -14,6 +14,8 @@ build_script:
     
     if "%KLUSOLVE_USE_MINGW%"=="1" mklink /D c:\mingw C:\Qt\5.9.7\mingw53_32\mingw
 
+    if "%KLUSOLVE_USE_MINGW%"=="1" dir /s c:\mingw
+
     mkdir c:\projects\klusolve\build
 
     cd c:\projects\klusolve\build
