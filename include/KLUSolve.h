@@ -7,10 +7,15 @@
 #define klusolve_included
 
 #ifndef _COMPLEX_DEFINED
-#define _COMPLEX_DEFINED
-#if (__GNUC__ && (__GNUC__ > 5)) || !DEFINED(__GNUC__)
+    #define _COMPLEX_DEFINED
+    #ifdef __GNUC__
+        #if __GNUC__ > 5
 typedef struct _complex {double x, y;} complex;
-#endif
+        #endif
+    #endif
+    #ifdef _MSC_VER
+typedef struct _complex {double x, y;} complex;
+    #endif
 #endif
 
 #ifndef KLU_API
