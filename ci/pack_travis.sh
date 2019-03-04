@@ -4,8 +4,8 @@
     # set KLUSOLVE_TAG=$TRAVIS_TAG
 # fi
 
-mkdir -p release/klusolve/lib
-cp -R lib/ release/klusolve/lib/
+mkdir -p release/klusolve
+cp -R lib release/klusolve/
 cp -R include release/klusolve/
 cp LICENSE release/klusolve/
 cp README.md release/klusolve/
