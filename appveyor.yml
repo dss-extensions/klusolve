@@ -14,8 +14,6 @@ build_script:
     
     if "%KLUSOLVE_USE_MINGW%"=="1" mklink /D c:\mingw C:\Qt\Tools\mingw530_32
 
-    if "%KLUSOLVE_USE_MINGW%"=="1" dir /s c:\mingw
-
     mkdir c:\projects\klusolve\build
 
     cd c:\projects\klusolve\build
@@ -30,6 +28,14 @@ build_script:
     
     dir /s lib
     
+    if "%KLUSOLVE_USE_MINGW%"=="1" ren C:\projects\klusolve\lib\win_x86\libklusolve.dll libklusolve_mingw32.dll
+
+    if "%KLUSOLVE_USE_MINGW%"=="1" appveyor PushArtifact C:\projects\klusolve\lib\win_x86\libklusolve_mingw32.dll
+    
+    if "%KLUSOLVE_USE_MINGW_W64%"=="1" ren C:\projects\klusolve\lib\win_x64\libklusolve.dll libklusolve_mingw-w64.dll
+
+    if "%KLUSOLVE_USE_MINGW_W64%"=="1" appveyor PushArtifact C:\projects\klusolve\lib\win_x64\libklusolve_mingw-w64.dll
+    
 environment:
   matrix:
     # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
@@ -41,13 +47,18 @@ environment:
       ADD_THIS_TO_PATH: C:\MinGW\bin
       CMAKE_GENERATOR: MinGW Makefiles
       CMAKE_EXTRA: -DCMAKE_CXX_COMPILER_ARG1=-m32 -DCMAKE_C_COMPILER_ARG1=-m32
+      KLUSOLVE_PACKAGE_NAME: klusolve-win_x86-gcc5.3
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       ADD_THIS_TO_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin
       CMAKE_GENERATOR: MinGW Makefiles
+      KLUSOLVE_PACKAGE_NAME: klusolve-win_x86-gcc8.1
+      KLUSOLVE_USE_MINGW_W64: 1
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       CMAKE_GENERATOR: Visual Studio 15 2017
+      
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       CMAKE_GENERATOR: Visual Studio 15 2017 Win64
+      
 
 # deploy:
 # - provider: GitHub
