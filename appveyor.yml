@@ -12,7 +12,7 @@ build_script:
     
     if exist c:\mingw ren c:\mingw mingw.disabled 
     
-    if "%KLUSOLVE_USE_MINGW%"=="1" ren c:\mingw.disabled mingw
+    if "%KLUSOLVE_USE_MINGW%"=="1" mklink /D c:\mingw C:\Qt\5.9.7\mingw53_32 
 
     mkdir c:\projects\klusolve\build
 
