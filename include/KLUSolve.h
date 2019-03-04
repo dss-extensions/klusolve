@@ -6,8 +6,14 @@
 #ifndef klusolve_included
 #define klusolve_included
 
+extern "C" {
+    #include <math.h>
+}
+
 #ifndef _COMPLEX_DEFINED
 typedef struct _complex {double x, y;} complex;
+#else
+typedef struct _complex complex;
 #endif
 
 #ifndef KLU_API
