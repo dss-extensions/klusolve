@@ -6,15 +6,11 @@
 #ifndef klusolve_included
 #define klusolve_included
 
-#ifdef __STDC_NO_COMPLEX__
 #ifndef _COMPLEX_DEFINED
 #define _COMPLEX_DEFINED
+#if (__GNUC__ && (__GNUC__ > 5)) || (!__GNUC__)
 typedef struct _complex {double x, y;} complex;
 #endif
-#else
-#include <math.h>
-#include <complex.h>
-typedef struct _complex complex;
 #endif
 
 #ifndef KLU_API
