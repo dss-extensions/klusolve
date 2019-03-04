@@ -13,6 +13,7 @@ typedef struct _complex {double x, y;} complex;
 #endif
 #else
 #include <math.h>
+#include <complex.h>
 typedef struct _complex complex;
 #endif
 
