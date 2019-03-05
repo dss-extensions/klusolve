@@ -13,10 +13,13 @@
 
 extern "C" void mvmult(int32_t N, void *b_, void *A_, void *x_)
 {
-    using std::complex;
-    typedef complex<double> Complex;
+    typedef std::complex<double> Complex;
     using namespace Eigen;
-    
+    typedef Matrix<Complex, 6, 1> Vector6cd;
+    typedef Matrix<Complex, 6, 6> Matrix6cd;
+    typedef Matrix<Complex, 8, 1> Vector8cd;
+    typedef Matrix<Complex, 8, 8> Matrix8cd;
+
     Complex *A = (Complex *)A_;
     Complex *x = (Complex *)x_;
     Complex *b = (Complex *)b_;
@@ -34,6 +37,12 @@ extern "C" void mvmult(int32_t N, void *b_, void *A_, void *x_)
         break;
     case 4:
         Map<Vector4cd>(b).noalias() = Map<Matrix4cd>(A) * Map<Vector4cd>(x);
+        break;
+    case 6:
+        Map<Vector6cd>(b).noalias() = Map<Matrix6cd>(A) * Map<Vector6cd>(x);
+        break;
+    case 8:
+        Map<Vector8cd>(b).noalias() = Map<Matrix8cd>(A) * Map<Vector8cd>(x);
         break;
     default:
         Map<VectorXcd>(b, N).noalias() = Map<MatrixXcd>(A, N, N) * Map<VectorXcd>(x, N);
