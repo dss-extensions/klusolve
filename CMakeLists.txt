@@ -34,6 +34,8 @@ SET(KLUSOLVE_SRC
     src/extra.cpp
 )
 
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.4)
         set (CMAKE_CXX_STANDARD 11)
