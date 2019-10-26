@@ -1,17 +1,23 @@
+/* ------------------------------------------------------------------------- */
+/* DSS-Extensions KLUSolve (KLUSolveX)                                       */
+/* Copyright (c) 2019, Paulo Meira                                           */
+/* Licensed under the GNU Lesser General Public License (LGPL) v 2.1         */
+/* ------------------------------------------------------------------------- */
+
 #ifdef _MSC_VER
-#   if _MSC_VER <= 1500
-#       include <stdint_compat.h>
-#   else
-#       include <cstdint>
-#   endif
+#if _MSC_VER <= 1500
+#include <stdint_compat.h>
 #else
-#    include <cstdint>
+#include <cstdint>
+#endif
+#else
+#include <cstdint>
 #endif
 
-#include <complex>
 #include <Eigen/Eigen>
+#include <complex>
 
-extern "C" void mvmult(int32_t N, void *b_, void *A_, void *x_)
+extern "C" void mvmult(int32_t N, double* b_, double* A_, double* x_)
 {
     typedef std::complex<double> Complex;
     using namespace Eigen;
@@ -20,11 +26,11 @@ extern "C" void mvmult(int32_t N, void *b_, void *A_, void *x_)
     typedef Matrix<Complex, 8, 1> Vector8cd;
     typedef Matrix<Complex, 8, 8> Matrix8cd;
 
-    Complex *A = (Complex *)A_;
-    Complex *x = (Complex *)x_;
-    Complex *b = (Complex *)b_;
-    
-    switch(N)
+    Complex* A = (Complex*)A_;
+    Complex* x = (Complex*)x_;
+    Complex* b = (Complex*)b_;
+
+    switch (N)
     {
     case 1:
         b[0] = A[0] * x[0];

@@ -1,4 +1,4 @@
-LIBRARY      "KLUSolve"
+LIBRARY      "libklusolvex"
 
 EXPORTS
  NewSparseSet	@1
@@ -22,3 +22,5 @@ EXPORTS
  GetTripletMatrix     @19
  FindIslands          @20
  mvmult               @21
+ IncrementMatrixElement @22
+ ZeroiseMatrixElement @23

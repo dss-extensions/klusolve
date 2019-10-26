@@ -1,4 +1,4 @@
-LIBKLUSOLVE_1.1 {
+LIBKLUSOLVEX_1.0 {
 global:
     NewSparseSet;
     GetFlops;
@@ -21,6 +21,8 @@ global:
     GetTripletMatrix;
     FindIslands;
     mvmult;
+    IncrementMatrixElement;
+    ZeroiseMatrixElement;
 local:
     *;
 };

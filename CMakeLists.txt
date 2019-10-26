@@ -3,7 +3,7 @@
 # build SuiteSparse on Windows
 
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-project(klusolve)
+project(klusolvex)
 SET(CMAKE_DEBUG_POSTFIX "")
 SET(CMAKE_RELEASE_PREFIX "")
 
@@ -27,11 +27,12 @@ else ()
 endif ()
 
 SET(KLUSOLVE_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/${KLUSOLVE_OUT_DIR_PREFIX}_${KLUSOLVE_OUT_DIR_SUFFIX}")
+add_definitions("-Dcsi=int")
+
 SET(KLUSOLVE_SRC
-    src/KLUSolve.cpp
-    src/KLUSystem.cpp
-    src/csz_stuff.c
-    src/extra.cpp
+    src/KLUSolveX.cpp
+    src/KLUSystemX.cpp
+    src/mvmult.cpp
 )
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -86,9 +87,7 @@ if (USE_SYSTEM_SUITESPARSE)
     find_library(SUITESPARSE_AMD_LIB NAMES amd)
     find_library(SUITESPARSE_BTF_LIB NAMES btf)
     find_library(SUITESPARSE_COLAMD_LIB NAMES colamd)
-    find_library(SUITESPARSE_CSPARSE_LIB NAMES csparse)
-    find_library(SUITESPARSE_CXSPARSE_LIB NAMES cxsparse)
-    set(KLU_LIBRARIES ${SUITESPARSE_KLU_LIB} ${SUITESPARSE_AMD_LIB} ${SUITESPARSE_BTF_LIB} ${SUITESPARSE_COLAMD_LIB} ${SUITESPARSE_CSPARSE_LIB} ${SUITESPARSE_CXSPARSE_LIB})
+    set(KLU_LIBRARIES ${SUITESPARSE_KLU_LIB} ${SUITESPARSE_AMD_LIB} ${SUITESPARSE_BTF_LIB} ${SUITESPARSE_COLAMD_LIB})
 
     if (NOT SUITESPARSE_KLU_LIB)
         message(FATAL_ERROR "KLU header not found. Please ensure SuiteSparse development package is properly installed.")
@@ -103,12 +102,11 @@ if (USE_SYSTEM_SUITESPARSE)
             # MacOS doesn't support linking statically with system libraries
             set(CMAKE_SHARED_LINKER_FLAGS "-fPIC")
         else()
-            set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++ ${FPIC} -Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/src/klusolve.map\"")
+            set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++ ${FPIC} -Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/src/klusolvex.map\"")
         endif()
     endif()
-    add_definitions(-DNCOMPLEX)
 
-    add_library(shared SHARED ${KLUSOLVE_SRC} src/klusolve.def)
+    add_library(shared SHARED ${KLUSOLVE_SRC} src/klusolvex.def)
     target_link_libraries(shared ${KLU_LIBRARIES})
     include_directories(${SUITESPARSE_INCLUDE_DIR})
 else ()
@@ -120,9 +118,10 @@ else ()
     ELSE()
         IF(NOT EXISTS "${CMAKE_BINARY_DIR}/SuiteSparse/SuiteSparse_config/SuiteSparse_config.h")
             message(STATUS "Downloading SuiteSparse source code...")
-            file(DOWNLOAD "http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-5.3.0.tar.gz" "${CMAKE_BINARY_DIR}/suitesparse.tar.gz")
+            file(DOWNLOAD "https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v5.6.0.tar.gz" "${CMAKE_BINARY_DIR}/suitesparse.tar.gz")
             message(STATUS "Unpacking SuiteSparse...")
             execute_process(COMMAND ${CMAKE_COMMAND} -E tar zxf "suitesparse.tar.gz" WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+            file(RENAME "${CMAKE_BINARY_DIR}/SuiteSparse-5.6.0" "${CMAKE_BINARY_DIR}/SuiteSparse")
         ELSE()
             message(STATUS "SuiteSparse already exists, skipping download.")
         ENDIF()
@@ -134,11 +133,10 @@ else ()
         "${SUITESPARSE_DIR}/AMD/Include/"
         "${SUITESPARSE_DIR}/COLAMD/Include/"
         "${SUITESPARSE_DIR}/BTF/Include/"
-        "${SUITESPARSE_DIR}/CSparse/Include/"
         "${SUITESPARSE_DIR}/KLU/Include/"
         "${SUITESPARSE_DIR}/SuiteSparse_config/"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/"
-    #    "${SUITESPARSE_DIR}/CHOLMOD/Include/"
+        # "${SUITESPARSE_DIR}/CHOLMOD/Include/"
     )
 
     #SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
@@ -201,11 +199,7 @@ else ()
 
     #set_source_files_properties(${BTF_I} PROPERTIES COMPILE_FLAGS "-DDINT")
     set_source_files_properties(${BTF_L} PROPERTIES COMPILE_FLAGS "-DDLONG")
-
-    # CSparse
-    file(GLOB CSPARSE_SRC "${SUITESPARSE_DIR}/CSparse/Source/*.c")
-    add_definitions("-Dcsi=int")
-
+    
     #KLU
     set(KLU_SRC "${SUITESPARSE_DIR}/KLU/Source")
 
@@ -228,15 +222,15 @@ else ()
         # set(DST_D "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_doubleint.c")
         # set(DST_DL "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_doublelong.c")
         set(DST_Z "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_complex.c")
-        set(DST_ZL "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_complexlong.c")
+        # set(DST_ZL "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_complexlong.c")
         # configure_file("${libsrc}" "${DST_D}" COPYONLY)
         # configure_file("${libsrc}" "${DST_DL}" COPYONLY)
         configure_file("${libsrc}" "${DST_Z}" COPYONLY)
-        configure_file("${libsrc}" "${DST_ZL}" COPYONLY)
+        # configure_file("${libsrc}" "${DST_ZL}" COPYONLY)
         # LIST(APPEND KLU_D "${DST_D}")
         # LIST(APPEND KLU_DL "${DST_DL}")
         LIST(APPEND KLU_Z "${DST_Z}")
-        LIST(APPEND KLU_ZL "${DST_ZL}")
+        # LIST(APPEND KLU_ZL "${DST_ZL}")
     endforeach(libsrc)
 
     set_source_files_properties(${KLU_D} PROPERTIES COMPILE_FLAGS "-DDINT")
@@ -270,21 +264,20 @@ else ()
             # MacOS doesn't support linking statically with system libraries
             set(CMAKE_SHARED_LINKER_FLAGS "-fPIC")
         else()
-            set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++ -fPIC -Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/src/klusolve.map\"")
+            set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++ -fPIC -Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/src/klusolvex.map\"")
         endif()
         add_definitions(-DNCOMPLEX -fPIC)
     else()
         add_definitions(-DNCOMPLEX)
     endif()
 
-    SET(SUITESPARSE_SRC "${SUITESPARSE_DIR}/SuiteSparse_config/SuiteSparse_config.c" ${KLU_I} ${KLU_L} ${KLU_D} ${KLU_DL} ${KLU_Z} ${KLU_ZL} ${BTF_I} ${BTF_L} ${COLAMD_I} ${COLAMD_L} ${COLAMD_GLOBAL} ${AMD_I} ${AMD_L} ${AMD_GLOBAL} ${CSPARSE_SRC})
-    add_library(shared SHARED ${KLUSOLVE_SRC} ${SUITESPARSE_SRC} src/klusolve.def)
+    SET(SUITESPARSE_SRC "${SUITESPARSE_DIR}/SuiteSparse_config/SuiteSparse_config.c" ${KLU_I} ${KLU_L} ${KLU_D} ${KLU_DL} ${KLU_Z} ${KLU_ZL} ${BTF_I} ${BTF_L} ${COLAMD_I} ${COLAMD_L} ${COLAMD_GLOBAL} ${AMD_I} ${AMD_L} ${AMD_GLOBAL})
+    add_library(shared SHARED ${KLUSOLVE_SRC} ${SUITESPARSE_SRC} src/klusolvex.def)
     target_link_libraries(shared ${KLU_LIBRARIES})
     include_directories(
         "${SUITESPARSE_DIR}/AMD/Include/"
         "${SUITESPARSE_DIR}/COLAMD/Include/"
         "${SUITESPARSE_DIR}/BTF/Include/"
-        "${SUITESPARSE_DIR}/CSparse/Include/"
         "${SUITESPARSE_DIR}/KLU/Include/"
         "${SUITESPARSE_DIR}/SuiteSparse_config/"
         "${SUITESPARSE_DIR}/SuiteSparse_config/Include"
@@ -293,9 +286,9 @@ else ()
 endif (USE_SYSTEM_SUITESPARSE)
 
 if (MSVC)
-    set_target_properties(shared PROPERTIES OUTPUT_NAME libklusolve)
+    set_target_properties(shared PROPERTIES OUTPUT_NAME libklusolvex)
 else ()
-    set_target_properties(shared PROPERTIES OUTPUT_NAME klusolve)
+    set_target_properties(shared PROPERTIES OUTPUT_NAME klusolvex)
 endif ()
 
 set_target_properties(shared PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})

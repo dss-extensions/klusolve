@@ -17,7 +17,7 @@ environment:
       KLUSOLVE_USE_MINGW_W64: 1
       CMAKE_GENERATOR: MinGW Makefiles
       ADD_THIS_TO_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin
-      KLUSOLVE_PACKAGE_NAME: klusolve-win_x86-gcc8.1
+      KLUSOLVE_PACKAGE_NAME: klusolvex-win_x86-gcc8.1
       KLUSOLVE_COMPILER: gcc8.1
       KLUSOLVE_ARCH: x64
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017

@@ -29,14 +29,14 @@ IF DEFINED APPVEYOR_REPO_TAG_NAME (
     set KLUSOLVE_TAG=%APPVEYOR_REPO_TAG_NAME%
 )
 mkdir release
-mkdir release\klusolve
-xcopy /E lib release\klusolve\lib\
-xcopy /E include release\klusolve\include\
-copy LICENSE release\klusolve\
-copy README.md release\klusolve\
+mkdir release\klusolvex
+xcopy /E lib release\klusolvex\lib\
+xcopy /E include release\klusolvex\include\
+copy LICENSE release\klusolvex\
+copy README.md release\klusolvex\
 cd release
-7z a "klusolve_%KLUSOLVE_TAG%_win_%KLUSOLVE_ARCH%-%KLUSOLVE_COMPILER%.zip" klusolve
+7z a "klusolvex_%KLUSOLVE_TAG%_win_%KLUSOLVE_ARCH%-%KLUSOLVE_COMPILER%.zip" klusolve
 cd ..
 rd /s /q release\klusolve
 
-appveyor PushArtifact "c:\projects\klusolve\release\klusolve_%KLUSOLVE_TAG%_win_%KLUSOLVE_ARCH%-%KLUSOLVE_COMPILER%.zip"
+appveyor PushArtifact "c:\projects\klusolve\release\klusolvex_%KLUSOLVE_TAG%_win_%KLUSOLVE_ARCH%-%KLUSOLVE_COMPILER%.zip"
