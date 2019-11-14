@@ -42,7 +42,7 @@ public:
 private:
     // admittance matrix blocks in compressed-column storage, like Matlab
     SparseMatrix spmat;
-    std::vector<Eigen::Triplet<complex>> triplets;
+    std::vector<Eigen::Triplet<complex> > triplets;
     std::vector<complex> acx;
 
     klu_symbolic* Symbolic;

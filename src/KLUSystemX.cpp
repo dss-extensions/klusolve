@@ -50,7 +50,7 @@ void KLUSystem::InitDefaults()
 void KLUSystem::Clear()
 {
     spmat = SparseMatrix();
-    triplets = std::vector<Eigen::Triplet<complex>>();
+    triplets = std::vector<Eigen::Triplet<complex> >();
 
     if (Numeric)
         klu_z_free_numeric(&Numeric, &Common);
@@ -142,7 +142,7 @@ void KLUSystem::ProcessTriplets()
 {
     spmat.setFromTriplets(triplets.begin(), triplets.end());
     m_NZpre = spmat.nonZeros();
-    triplets = std::vector<Eigen::Triplet<complex>>();
+    triplets = std::vector<Eigen::Triplet<complex> >();
 }
 
 int KLUSystem::Factor()
