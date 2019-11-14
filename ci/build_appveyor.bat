@@ -35,8 +35,8 @@ xcopy /E include release\klusolvex\include\
 copy LICENSE release\klusolvex\
 copy README.md release\klusolvex\
 cd release
-7z a "klusolvex_%KLUSOLVE_TAG%_win_%KLUSOLVE_ARCH%-%KLUSOLVE_COMPILER%.zip" klusolve
+7z a "klusolvex_%KLUSOLVE_TAG%_win_%KLUSOLVE_ARCH%-%KLUSOLVE_COMPILER%.zip" klusolvex
 cd ..
-rd /s /q release\klusolve
+rd /s /q release\klusolvex
 
 appveyor PushArtifact "c:\projects\klusolve\release\klusolvex_%KLUSOLVE_TAG%_win_%KLUSOLVE_ARCH%-%KLUSOLVE_COMPILER%.zip"
