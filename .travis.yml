@@ -60,7 +60,7 @@ matrix:
         - cmake -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF ..
         - cmake --build . --config Release
         - cd ..
-        - file lib/darwin_x64/libklusolve.dylib
+        - file lib/darwin_x64/libklusolvex.dylib
         - ls -lR lib
         - bash ci/pack_travis.sh
 
