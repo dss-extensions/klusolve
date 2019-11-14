@@ -3,9 +3,9 @@
 
 ---
 
-# DSS-Extensions: KLUSolve (KLUSolveX)
+# DSS-Extensions: KLUSolveX
 
-This is fork of KLUSolve used by DSS C-API. See the original at [SourceForge](https://sourceforge.net/p/klusolve/code/HEAD/tree/). As explicit in `LICENSE`, this work uses the same license, LGPL 2.1 or later.
+This is a fork of **KLUSolve** used by DSS C-API. See the original at [SourceForge](https://sourceforge.net/p/klusolve/code/HEAD/tree/). As explicit in `LICENSE`, this work uses the same license, LGPL 2.1 or later.
 
 Changes include:
 - Uses a CMake building script.
@@ -13,6 +13,7 @@ Changes include:
 - Adds a dependency on [Eigen](http://eigen.tuxfamily.org/), dropping the customized CZSparse.
 - Introduces some dense matrix functions (e.g. `mvmult`) to be used in the [DSS C-API](https://github.com/dss-extensions/dss_capi/), an alternative [OpenDSS](sf.net/p/electricdss) library, for better performance.
 - Introduces reuse of the symbolic and numeric factorization steps from KLU when the sparse matrix is unchanged.
+- Changes calling convention to CDECL on Windows -- so far this is the only change that breaks compatibility with KLUSolve. 
 
 For binary distributions, basic descriptions of the dependencies and licensing information is reproduced below. When building from source, be sure to check the licenses of the components.
 
@@ -85,8 +86,8 @@ AMD:  a set of routines for permuting sparse matrices prior to
 ---
 
 
-COLAMD, Copyright 1998-2016, Timothy A. Davis.  http://www.suitesparse.com
--------------------------------------------------------------------------------
+**COLAMD, Copyright 1998-2016, Timothy A. Davis.  http://www.suitesparse.com**
+
 
 The COLAMD column approximate minimum degree ordering algorithm computes
 a permutation vector P such that the LU factorization of A (:,P)
@@ -124,7 +125,7 @@ orderings than their MATLAB counterparts, colmmd and symmmd.
 
 ---
 
-BTF, by Timothy A. Davis, Copyright (C) 2004-2016, University of Florida
+**BTF, by Timothy A. Davis, Copyright (C) 2004-2016, University of Florida**
 BTF is also available under other licenses; contact the author for details.
 http://www.suitesparse.com
 
@@ -152,7 +153,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 ---
 
-KLU, Copyright (C) 2004-2013, University of Florida
+**KLU, Copyright (C) 2004-2013, University of Florida**
 by Timothy A. Davis and Ekanathan Palamadai.
 KLU is also available under other licenses; contact authors for details.
 http://www.suitesparse.com
