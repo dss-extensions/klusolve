@@ -34,6 +34,7 @@ SET(KLUSOLVE_SRC
     src/KLUSolveX.cpp
     src/KLUSystemX.cpp
     src/mvmult.cpp
+    src/klusolve_metis.c
 )
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -44,11 +45,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif()
 endif()
 
-# Best results for GCC and MSVC
+# Best results for GCC and MSVC, used only on the Release build
 if (NOT MSVC)
-    add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
+    set_property(GLOBAL PROPERTY COMPILE_DEFINITIONS_RELEASE "-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
 else()
-    add_definitions("/DNDEBUG /O2 /Ot /GS- /openmp")
+    set_property(GLOBAL PROPERTY COMPILE_DEFINITIONS_RELEASE "/DNDEBUG /O2 /Ot /GS- /openmp")
 endif()
 
 # Handle Eigen3
@@ -87,8 +88,9 @@ if (USE_SYSTEM_SUITESPARSE)
     find_library(SUITESPARSE_KLU_LIB NAMES klu)
     find_library(SUITESPARSE_AMD_LIB NAMES amd)
     find_library(SUITESPARSE_BTF_LIB NAMES btf)
+    find_library(SUITESPARSE_METIS_LIB NAMES metis)
     find_library(SUITESPARSE_COLAMD_LIB NAMES colamd)
-    set(KLU_LIBRARIES ${SUITESPARSE_KLU_LIB} ${SUITESPARSE_AMD_LIB} ${SUITESPARSE_BTF_LIB} ${SUITESPARSE_COLAMD_LIB})
+    set(KLU_LIBRARIES ${SUITESPARSE_KLU_LIB} ${SUITESPARSE_AMD_LIB} ${SUITESPARSE_BTF_LIB} ${SUITESPARSE_COLAMD_LIB} ${SUITESPARSE_METIS_LIB})
 
     if (NOT SUITESPARSE_KLU_LIB)
         message(FATAL_ERROR "KLU header not found. Please ensure SuiteSparse development package is properly installed.")
@@ -107,8 +109,8 @@ if (USE_SYSTEM_SUITESPARSE)
         endif()
     endif()
 
-    add_library(shared SHARED ${KLUSOLVE_SRC} src/klusolvex.def)
-    target_link_libraries(shared ${KLU_LIBRARIES})
+    add_library(klusolve SHARED ${KLUSOLVE_SRC} src/klusolvex.def)
+    target_link_libraries(klusolve ${KLU_LIBRARIES})
     include_directories(${SUITESPARSE_INCLUDE_DIR})
 else ()
     IF (EXISTS "$ENV{SUITESPARSE_SRC}/SuiteSparse_config/SuiteSparse_config.h")
@@ -128,14 +130,30 @@ else ()
         ENDIF()
         SET(SUITESPARSE_DIR "${CMAKE_BINARY_DIR}/SuiteSparse")
     ENDIF()
+    if (MINGW)
+        # Ideally the patch should be merged upstream, either in SuiteSparse's
+        # patched code, or in the original METIS (no updates since 2013)
+        find_package(Patch)
+        if(NOT Patch_FOUND)
+            message(FATAL_ERROR "Patch executable is required for METIS")
+        endif()
+        message(STATUS "${Patch_EXECUTABLE} --input=${CMAKE_CURRENT_SOURCE_DIR}/src/metis.patch WORKING_DIRECTORY ${SUITESPARSE_DIR}")
+        execute_process(COMMAND ${Patch_EXECUTABLE} "--input=${CMAKE_CURRENT_SOURCE_DIR}/src/metis.patch" "-p0" WORKING_DIRECTORY ${SUITESPARSE_DIR})
+    endif()
 
+    # METIS
+    set(GKLIB_PATH "${SUITESPARSE_DIR}/metis-5.1.0/GKlib" CACHE PATH "Forced GKLIB path fix" FORCE)
+    include(CheckIncludeFile)
+    check_include_file(sys/resource.h HAVE_SYS_RESOURCE_H)
 
+    add_subdirectory("${SUITESPARSE_DIR}/metis-5.1.0/" "METIS")
     include_directories(
         "${SUITESPARSE_DIR}/AMD/Include/"
         "${SUITESPARSE_DIR}/COLAMD/Include/"
         "${SUITESPARSE_DIR}/BTF/Include/"
         "${SUITESPARSE_DIR}/KLU/Include/"
         "${SUITESPARSE_DIR}/SuiteSparse_config/"
+        "${SUITESPARSE_DIR}/metis-5.1.0/include/"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/"
         # "${SUITESPARSE_DIR}/CHOLMOD/Include/"
     )
@@ -200,7 +218,7 @@ else ()
 
     #set_source_files_properties(${BTF_I} PROPERTIES COMPILE_FLAGS "-DDINT")
     set_source_files_properties(${BTF_L} PROPERTIES COMPILE_FLAGS "-DDLONG")
-    
+
     #KLU
     set(KLU_SRC "${SUITESPARSE_DIR}/KLU/Source")
 
@@ -273,8 +291,9 @@ else ()
     endif()
 
     SET(SUITESPARSE_SRC "${SUITESPARSE_DIR}/SuiteSparse_config/SuiteSparse_config.c" ${KLU_I} ${KLU_L} ${KLU_D} ${KLU_DL} ${KLU_Z} ${KLU_ZL} ${BTF_I} ${BTF_L} ${COLAMD_I} ${COLAMD_L} ${COLAMD_GLOBAL} ${AMD_I} ${AMD_L} ${AMD_GLOBAL})
-    add_library(shared SHARED ${KLUSOLVE_SRC} ${SUITESPARSE_SRC} src/klusolvex.def)
-    target_link_libraries(shared ${KLU_LIBRARIES})
+    add_library(klusolve SHARED ${KLUSOLVE_SRC} ${SUITESPARSE_SRC} src/klusolvex.def)
+
+    target_link_libraries(klusolve PUBLIC metis)
     include_directories(
         "${SUITESPARSE_DIR}/AMD/Include/"
         "${SUITESPARSE_DIR}/COLAMD/Include/"
@@ -287,18 +306,18 @@ else ()
 endif (USE_SYSTEM_SUITESPARSE)
 
 if (MSVC)
-    set_target_properties(shared PROPERTIES OUTPUT_NAME libklusolvex)
+    set_target_properties(klusolve PROPERTIES OUTPUT_NAME libklusolvex)
 else ()
-    set_target_properties(shared PROPERTIES OUTPUT_NAME klusolvex)
+    set_target_properties(klusolve PROPERTIES OUTPUT_NAME klusolvex)
 endif ()
 
-set_target_properties(shared PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})
-set_target_properties(shared PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})
-set_target_properties(shared PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})
+set_target_properties(klusolve PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})
+set_target_properties(klusolve PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})
+set_target_properties(klusolve PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})
 
 if (MSVC)
     # Force the Release output to be in the expected folder
-    set_target_properties(shared PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
-    set_target_properties(shared PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
-    set_target_properties(shared PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
+    set_target_properties(klusolve PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
+    set_target_properties(klusolve PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
+    set_target_properties(klusolve PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
 endif ()

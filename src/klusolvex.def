@@ -24,3 +24,4 @@ EXPORTS
  mvmult               @21
  IncrementMatrixElement @22
  ZeroiseMatrixElement @23
+ klusolve_metis @24

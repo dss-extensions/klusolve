@@ -3,7 +3,8 @@ set KLUSOLVE_TAG=%APPVEYOR_REPO_COMMIT%
 REM Prepare the environment
 ren c:\cygwin cygwin.disabled
 ren c:\cygwin64 cygwin64.disabled
-ren "C:\Program Files\Git" Git.disabled
+del "c:\Program Files\git\usr\bin\bash.exe"
+del "c:\Program Files\git\usr\bin\sh.exe"
 
 if exist c:\mingw ren c:\mingw mingw.disabled 
 if "%KLUSOLVE_USE_MINGW%"=="1" mklink /D c:\mingw C:\Qt\Tools\mingw530_32

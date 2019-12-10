@@ -23,6 +23,7 @@ global:
     mvmult;
     IncrementMatrixElement;
     ZeroiseMatrixElement;
+    klusolve_metis;
 local:
     *;
 };
