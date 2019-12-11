@@ -47,9 +47,11 @@ endif()
 
 # Best results for GCC and MSVC, used only on the Release build
 if (NOT MSVC)
-    set_property(GLOBAL PROPERTY COMPILE_DEFINITIONS_RELEASE "-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
+    # set_property(GLOBAL PROPERTY COMPILE_DEFINITIONS_RELEASE "-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
+    add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
 else()
-    set_property(GLOBAL PROPERTY COMPILE_DEFINITIONS_RELEASE "/DNDEBUG /O2 /Ot /GS- /openmp")
+    # set_property(GLOBAL PROPERTY COMPILE_DEFINITIONS_RELEASE "/DNDEBUG /O2 /Ot /GS- /openmp")
+    add_definitions("/DNDEBUG /O2 /Ot /GS- /openmp")
 endif()
 
 # Handle Eigen3
@@ -162,62 +164,35 @@ else ()
     add_definitions("-DSUITESPARSE_DLLEXPORT=__declspec(dllexport)")
     set(CMAKE_DEBUG_POSTFIX "d")
 
-    # AMD
     file(GLOB AMD_TEMPLATE_SRC "${SUITESPARSE_DIR}/AMD/Source/*.c")
-
-    foreach(libsrc ${AMD_TEMPLATE_SRC})
-        GET_FILENAME_COMPONENT(SRC "${libsrc}" NAME_WE)
-        string(COMPARE NOTEQUAL "${SRC}" "amd_global" PROCESS_THIS_FILE)
-        if(PROCESS_THIS_FILE)
-            set(DST_I "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_int.c")
-            set(DST_L "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_long.c")
-            configure_file("${libsrc}" "${DST_I}" COPYONLY)
-            configure_file("${libsrc}" "${DST_L}" COPYONLY)
-            LIST(APPEND AMD_I "${DST_I}")
-            LIST(APPEND AMD_L "${DST_L}")
-        endif(PROCESS_THIS_FILE)
-    endforeach(libsrc)
-
-    set_source_files_properties(${AMD_I} PROPERTIES COMPILE_FLAGS "-DDINT")
-    set_source_files_properties(${AMD_L} PROPERTIES COMPILE_FLAGS "-DDLONG")
-    set(AMD_GLOBAL "${SUITESPARSE_DIR}/AMD/Source/amd_global.c")
-
-    # COLAMD
     file(GLOB COLAMD_TEMPLATE_SRC "${SUITESPARSE_DIR}/COLAMD/Source/*.c")
-    #list(REMOVE_ITEM COLAMD_TEMPLATE_SRC "COLAMD/Source/colamd_global.c")
-
-    foreach(libsrc ${COLAMD_TEMPLATE_SRC})
-        GET_FILENAME_COMPONENT(SRC "${libsrc}" NAME_WE)
-        #string(COMPARE NOTEQUAL "${SRC}" "colamd_global" PROCESS_THIS_FILE)
-        if(PROCESS_THIS_FILE)
-            set(DST_I "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_int.c")
-            set(DST_L "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_long.c")
-            configure_file("${libsrc}" "${DST_I}" COPYONLY)
-            configure_file("${libsrc}" "${DST_L}" COPYONLY)
-            LIST(APPEND COLAMD_I "${DST_I}")
-            LIST(APPEND COLAMD_L "${DST_L}")
-        endif(PROCESS_THIS_FILE)
-    endforeach(libsrc)
-
-    #set_source_files_properties(${COLAMD_I} PROPERTIES COMPILE_FLAGS "-DDINT")
-    set_source_files_properties(${COLAMD_L} PROPERTIES COMPILE_FLAGS "-DDLONG")
-    #set(COLAMD_GLOBAL "COLAMD/Source/colamd_global.c")
-
-    # BTF
     file(GLOB BTF_TEMPLATE_SRC "${SUITESPARSE_DIR}/BTF/Source/*.c")
+    list(FILTER AMD_TEMPLATE_SRC EXCLUDE REGEX .*amd_global.*)
+    set(AMD_GLOBAL "${SUITESPARSE_DIR}/AMD/Source/amd_global.c")
+    
+    add_library(AMD_I OBJECT ${AMD_TEMPLATE_SRC})
+    add_library(COLAMD_I OBJECT ${COLAMD_TEMPLATE_SRC})
+    add_library(BTF_I OBJECT ${BTF_TEMPLATE_SRC})
+    add_library(AMD_L OBJECT ${AMD_TEMPLATE_SRC})
+    add_library(COLAMD_L OBJECT ${COLAMD_TEMPLATE_SRC})
+    add_library(BTF_L OBJECT ${BTF_TEMPLATE_SRC})
+    target_compile_options(AMD_L PRIVATE "-DDLONG")
+    target_compile_options(COLAMD_L PRIVATE "-DDLONG")
+    target_compile_options(BTF_L PRIVATE "-DDLONG")
 
-    foreach(libsrc ${BTF_TEMPLATE_SRC})
-        GET_FILENAME_COMPONENT(SRC "${libsrc}" NAME_WE)
-        set(DST_I "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_int.c")
-        set(DST_L "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_long.c")
-        configure_file("${libsrc}" "${DST_I}" COPYONLY)
-        configure_file("${libsrc}" "${DST_L}" COPYONLY)
-        LIST(APPEND BTF_I "${DST_I}")
-        LIST(APPEND BTF_L "${DST_L}")
-    endforeach(libsrc)
+    #set_source_files_properties(${BTF_I} PROPERTIES COMPILE_FLAGS -DDINT)
+    set_source_files_properties(${BTF_L} PROPERTIES COMPILE_FLAGS -DDLONG)
 
-    #set_source_files_properties(${BTF_I} PROPERTIES COMPILE_FLAGS "-DDINT")
-    set_source_files_properties(${BTF_L} PROPERTIES COMPILE_FLAGS "-DDLONG")
+    set(
+        SUITESPARSE_OBJS 
+        $<TARGET_OBJECTS:AMD_I>
+        $<TARGET_OBJECTS:COLAMD_I>
+        $<TARGET_OBJECTS:BTF_I>
+        $<TARGET_OBJECTS:AMD_L>
+        $<TARGET_OBJECTS:COLAMD_L>
+        $<TARGET_OBJECTS:BTF_L>
+    )
+
 
     #KLU
     set(KLU_SRC "${SUITESPARSE_DIR}/KLU/Source")
@@ -236,27 +211,6 @@ else ()
         "${KLU_SRC}/klu_tsolve.c"
         "${KLU_SRC}/klu_free_numeric.c")
 
-    foreach(libsrc ${KLU_TEMPLATE_SRC})
-        GET_FILENAME_COMPONENT(SRC "${libsrc}" NAME_WE)
-        # set(DST_D "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_doubleint.c")
-        # set(DST_DL "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_doublelong.c")
-        set(DST_Z "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_complex.c")
-        # set(DST_ZL "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_complexlong.c")
-        # configure_file("${libsrc}" "${DST_D}" COPYONLY)
-        # configure_file("${libsrc}" "${DST_DL}" COPYONLY)
-        configure_file("${libsrc}" "${DST_Z}" COPYONLY)
-        # configure_file("${libsrc}" "${DST_ZL}" COPYONLY)
-        # LIST(APPEND KLU_D "${DST_D}")
-        # LIST(APPEND KLU_DL "${DST_DL}")
-        LIST(APPEND KLU_Z "${DST_Z}")
-        # LIST(APPEND KLU_ZL "${DST_ZL}")
-    endforeach(libsrc)
-
-    set_source_files_properties(${KLU_D} PROPERTIES COMPILE_FLAGS "-DDINT")
-    set_source_files_properties(${KLU_Z} PROPERTIES COMPILE_FLAGS "-DCOMPLEX -DDINT")
-    set_source_files_properties(${KLU_ZL} PROPERTIES COMPILE_FLAGS "-DCOMPLEX -DDLONG")
-    set_source_files_properties(${KLU_DL} PROPERTIES COMPILE_FLAGS "-DDLONG")
-
     set(KLU_COMMON_SRC
         "${KLU_SRC}/klu_analyze.c"
         "${KLU_SRC}/klu_analyze_given.c"
@@ -265,18 +219,25 @@ else ()
         "${KLU_SRC}/klu_memory.c"
     )
 
+    # add_library(KLU_D OBJECT ${KLU_TEMPLATE_SRC})
+    add_library(KLU_Z OBJECT ${KLU_TEMPLATE_SRC})
+    # add_library(KLU_ZL OBJECT ${KLU_TEMPLATE_SRC})
+    # add_library(KLU_DL OBJECT ${KLU_TEMPLATE_SRC})
+    add_library(KLU_I OBJECT ${KLU_COMMON_SRC})
+    add_library(KLU_L OBJECT ${KLU_COMMON_SRC})
+    
+    # target_compile_options(KLU_D PRIVATE -DDINT)
+    target_compile_options(KLU_Z PRIVATE -DCOMPLEX -DDINT)
+    # target_compile_options(KLU_ZL PRIVATE -DCOMPLEX -DDLONG)
+    # target_compile_options(KLU_DL PRIVATE -DDLONG)
+    target_compile_options(KLU_L PRIVATE -DDLONG)
 
-    foreach(libsrc ${KLU_COMMON_SRC})
-        GET_FILENAME_COMPONENT(SRC "${libsrc}" NAME_WE)
-        set(DST_I "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_int.c")
-        set(DST_L "${CMAKE_CURRENT_BINARY_DIR}/${SRC}_long.c")
-        configure_file("${libsrc}" "${DST_I}" COPYONLY)
-        configure_file("${libsrc}" "${DST_L}" COPYONLY)
-        LIST(APPEND KLU_I "${DST_I}")
-        LIST(APPEND KLU_L "${DST_L}")
-    endforeach(libsrc)
-
-    set_source_files_properties(${KLU_L} PROPERTIES COMPILE_FLAGS "-DDLONG")
+    set(
+        KLU_OBJS 
+        $<TARGET_OBJECTS:KLU_Z>
+        $<TARGET_OBJECTS:KLU_I>
+        $<TARGET_OBJECTS:KLU_L>
+    )
 
     if (NOT MSVC)
         if (APPLE)
@@ -290,8 +251,8 @@ else ()
         add_definitions(-DNCOMPLEX)
     endif()
 
-    SET(SUITESPARSE_SRC "${SUITESPARSE_DIR}/SuiteSparse_config/SuiteSparse_config.c" ${KLU_I} ${KLU_L} ${KLU_D} ${KLU_DL} ${KLU_Z} ${KLU_ZL} ${BTF_I} ${BTF_L} ${COLAMD_I} ${COLAMD_L} ${COLAMD_GLOBAL} ${AMD_I} ${AMD_L} ${AMD_GLOBAL})
-    add_library(klusolve SHARED ${KLUSOLVE_SRC} ${SUITESPARSE_SRC} src/klusolvex.def)
+    SET(SUITESPARSE_SRC "${SUITESPARSE_DIR}/SuiteSparse_config/SuiteSparse_config.c" ${COLAMD_GLOBAL} ${AMD_GLOBAL})
+    add_library(klusolve SHARED ${KLU_OBJS} ${SUITESPARSE_OBJS} ${SUITESPARSE_SRC} ${KLUSOLVE_SRC} src/klusolvex.def)
 
     target_link_libraries(klusolve PUBLIC metis)
     include_directories(
