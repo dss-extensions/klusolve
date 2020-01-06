@@ -414,7 +414,7 @@ int KLUSystem::IncrementElement(int iRow, int iCol, double re, double im)
     if (it == it_end || (*it != iRow))
         return 0; // no row
 
-    rowIdxInCol = (it - it_begin) * 2;
+    rowIdxInCol = (it - it_begin);
     colData = Ax + Ap[iCol];
     colData[rowIdxInCol] += complex(re, im);
 
@@ -444,7 +444,7 @@ int KLUSystem::ZeroiseElement(int iRow, int iCol)
     if (it == it_end || (*it != iRow))
         return 0; // no row
 
-    rowIdxInCol = (it - it_begin) * 2;
+    rowIdxInCol = (it - it_begin);
     colData = Ax + Ap[iCol];
     colData[rowIdxInCol] = 0;
 
