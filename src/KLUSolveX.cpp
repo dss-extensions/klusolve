@@ -154,11 +154,12 @@ int IncrementMatrixElement(void* hSparse, int i, int j, double re, double im)
     KLUSystem* pSys = reinterpret_cast<KLUSystem*>(hSparse);
     if (pSys)
     {
-        pSys->IncrementElement(i, j, re, im);
-        pSys->bFactored = false;
-        pSys->reuseSymbolic = true;
-
-        rc = 1;
+        rc = pSys->IncrementElement(i, j, re, im);
+        if (rc)
+        {
+            pSys->bFactored = false;
+            pSys->reuseSymbolic = true;
+        }
     }
     return rc;
 }
@@ -171,8 +172,11 @@ int ZeroiseMatrixElement(void* hSparse, int i, int j)
     if (pSys)
     {
         rc = pSys->ZeroiseElement(i, j);
-        pSys->bFactored = false;
-        pSys->reuseSymbolic = true;
+        if (rc)
+        {
+            pSys->bFactored = false;
+            pSys->reuseSymbolic = true;
+        }
     }
     return rc;
 }
