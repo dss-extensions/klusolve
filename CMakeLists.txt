@@ -51,7 +51,7 @@ if (NOT MSVC)
     add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
 else()
     # set_property(GLOBAL PROPERTY COMPILE_DEFINITIONS_RELEASE "/DNDEBUG /O2 /Ot /GS- /openmp")
-    add_definitions("/DNDEBUG /O2 /Ot /GS- /openmp")
+    add_definitions("/DNDEBUG /Ot /GS- /openmp") # removed /O2 since it's the default
 endif()
 
 # Handle Eigen3

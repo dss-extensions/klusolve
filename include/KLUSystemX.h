@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------- */
 /* DSS-Extensions KLUSolve (KLUSolveX)                                       */
-/* Copyright (c) 2019, Paulo Meira                                           */
+/* Copyright (c) 2019-2020, Paulo Meira                                      */
 /* Based on KLUSolve, Copyright (c) 2008, EnerNex Corporation                */
 /* All rights reserved.                                                      */
 /* Licensed under the GNU Lesser General Public License (LGPL) v 2.1         */
@@ -67,8 +67,10 @@ public:
     KLUSystem(int nBus, int nV = 0, int nI = 0);
     ~KLUSystem();
 
+    uint64_t options; // KLUSolveX options, currently limited to values in enum ReuseFlags
+    
     bool bFactored; //  system has been factored
-    bool reuseSymbolic;
+    bool reuseSymbolic; // current state, actual reuse depends on options
 
     int FactorSystem();
     void SolveSystem(complex* acxX, complex* acxB);

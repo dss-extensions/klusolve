@@ -25,3 +25,4 @@ EXPORTS
  IncrementMatrixElement @22
  ZeroiseMatrixElement @23
  klusolve_metis @24
+ SetOptions @25

@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------- */
 /* DSS-Extensions KLUSolve (KLUSolveX)                                       */
-/* Copyright (c) 2019, Paulo Meira                                           */
+/* Copyright (c) 2019-2020, Paulo Meira                                      */
 /* Based on KLUSolve, Copyright (c) 2008, EnerNex Corporation                */
 /* All rights reserved.                                                      */
 /* Licensed under the GNU Lesser General Public License (LGPL) v 2.1         */
@@ -33,6 +33,18 @@
 extern "C"
 {
 #endif
+    enum ReuseFlags { 
+        // The values themselves are subject to change in future versions,
+        // use this enum for easier upgrades
+        ReuseNothing = 0,
+        ReuseCompressedMatrix = 1, // Reuse only the prepared CSC matrix
+        ReuseSymbolicFactorization = 2, // Reuse the symbolic factorization, implies ReuseCompressedMatrix
+        ReuseNumericFactorization = 3 // Reuse the numeric factorization, implies ReuseSymbolicFactorization
+    };
+
+    // Set KLUSolveX options. Currently restricted to ReuseFlags values.
+    // Other bits reserved for future use.
+    void SetOptions(void* handle, uint64_t opts);
 
     // return handle of new sparse set, 0 if error
     // be sure to DeleteSparseSet using the returned handle

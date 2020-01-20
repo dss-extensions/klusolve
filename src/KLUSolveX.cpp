@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------- */
 /* DSS-Extensions KLUSolve (KLUSolveX)                                       */
-/* Copyright (c) 2019, Paulo Meira                                           */
+/* Copyright (c) 2019-2020, Paulo Meira                                      */
 /* Based on KLUSolve, Copyright (c) 2008, EnerNex Corporation                */
 /* All rights reserved.                                                      */
 /* Licensed under the GNU Lesser General Public License (LGPL) v 2.1         */
@@ -14,6 +14,15 @@
 int SetLogFile(char*, int) // Unused, kept for potential backwards compatibility
 {
     return 0;
+}
+
+void SetOptions(void* handle, uint64_t opts)
+{
+    KLUSystem* pSys = reinterpret_cast<KLUSystem*>(handle);
+    if (!pSys) 
+        return;
+    
+    pSys->options = opts;
 }
 
 void* NewSparseSet(int nBus)
@@ -80,7 +89,7 @@ int SolveSparseSet(void* hSparse, double* acxX, double* acxB)
     KLUSystem* pSys = reinterpret_cast<KLUSystem*>(hSparse);
     if (pSys)
     {
-        if (!pSys->bFactored || pSys->reuseSymbolic)
+        if (!pSys->bFactored || (pSys->reuseSymbolic && (pSys->options >= ReuseSymbolicFactorization)))
         {
             pSys->FactorSystem();
         }
@@ -160,6 +169,10 @@ int IncrementMatrixElement(void* hSparse, int i, int j, double re, double im)
             pSys->bFactored = false;
             pSys->reuseSymbolic = true;
         }
+        else
+        {
+            pSys->reuseSymbolic = false;
+        }
     }
     return rc;
 }
@@ -176,6 +189,10 @@ int ZeroiseMatrixElement(void* hSparse, int i, int j)
         {
             pSys->bFactored = false;
             pSys->reuseSymbolic = true;
+        }
+        else
+        {
+            pSys->reuseSymbolic = false;
         }
     }
     return rc;
@@ -288,7 +305,6 @@ int GetSingularCol(void* hSparse, int* pResult)
 
 int AddPrimitiveMatrix(void* hSparse, int nOrder, int* pNodes, double* pcY)
 {
-    // printf("C++>AddPrimitiveMatrix: %d\n", nOrder);
     int rc = 0;
     KLUSystem* pSys = reinterpret_cast<KLUSystem*>(hSparse);
     if (pSys)

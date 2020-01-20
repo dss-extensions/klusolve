@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------- */
 /* DSS-Extensions KLUSolve (KLUSolveX)                                       */
-/* Copyright (c) 2019, Paulo Meira                                           */
+/* Copyright (c) 2019-2020, Paulo Meira                                      */
 /* Based on KLUSolve, Copyright (c) 2008, EnerNex Corporation                */
 /* All rights reserved.                                                      */
 /* Licensed under the GNU Lesser General Public License (LGPL) v 2.1         */
@@ -40,6 +40,8 @@ void KLUSystem::NullPointers()
 
 void KLUSystem::InitDefaults()
 {
+    options = 0;
+
     m_nBus = 0;
     bFactored = false;
     reuseSymbolic = false;
@@ -50,7 +52,7 @@ void KLUSystem::InitDefaults()
 void KLUSystem::Clear()
 {
     spmat = SparseMatrix();
-    triplets = std::vector<Eigen::Triplet<complex> >();
+    triplets = std::vector<Eigen::Triplet<complex>>();
 
     if (Numeric)
         klu_z_free_numeric(&Numeric, &Common);
@@ -92,7 +94,7 @@ int KLUSystem::FactorSystem()
 
 void KLUSystem::SolveSystem(complex* acxX, complex* acxB)
 {
-	memcpy(&acxX[0], acxB, sizeof(complex) * m_nBus);
+    memcpy(&acxX[0], acxB, sizeof(complex) * m_nBus);
     Solve(&acxX[0]);
 }
 
@@ -142,7 +144,7 @@ void KLUSystem::ProcessTriplets()
 {
     spmat.setFromTriplets(triplets.begin(), triplets.end());
     m_NZpre = spmat.nonZeros();
-    triplets = std::vector<Eigen::Triplet<complex> >();
+    triplets = std::vector<Eigen::Triplet<complex>>();
 }
 
 int KLUSystem::Factor()
@@ -153,7 +155,7 @@ int KLUSystem::Factor()
         ProcessTriplets();
         spmat.makeCompressed(); // should be a no-op here
     }
-    else if (!reuseSymbolic)
+    else if ((options != ReuseCompressedMatrix) && !(reuseSymbolic && (options >= ReuseSymbolicFactorization)))
     {
         // otherwise, compression and factoring has already been done
         if (m_fltBus)
@@ -162,23 +164,39 @@ int KLUSystem::Factor()
     }
 
     // then factor Y22
-    if (!reuseSymbolic)
+    if (!(reuseSymbolic && (options >= ReuseSymbolicFactorization)))
+    {
+        if (Symbolic)
+            klu_free_symbolic(&Symbolic, &Common);
+        Symbolic = nullptr;
+    }
+    if (!(reuseSymbolic && (options >= ReuseSymbolicFactorization)) || !(Numeric && (options >= ReuseNumericFactorization)))
     {
         if (Numeric)
             klu_z_free_numeric(&Numeric, &Common);
-        if (Symbolic)
-            klu_free_symbolic(&Symbolic, &Common);
         Numeric = nullptr;
-        Symbolic = nullptr;
     }
 
     bool reuseFailed = true;
 
-    if (reuseSymbolic && Symbolic && Numeric)
+    if ((reuseSymbolic && (options >= ReuseSymbolicFactorization)) && Symbolic)
     {
-        // If refactorization has failed, run the full numeric factorization
-        reuseFailed = klu_z_refactor(spmat.outerIndexPtr(), spmat.innerIndexPtr(), reinterpret_cast<double*>(spmat.valuePtr()), Symbolic, Numeric, &Common) != 1;
+        if (Numeric && (options >= ReuseNumericFactorization))
+        {
+            // If refactorization has failed, run the full numeric factorization
+            reuseFailed = klu_z_refactor(spmat.outerIndexPtr(), spmat.innerIndexPtr(), reinterpret_cast<double*>(spmat.valuePtr()), Symbolic, Numeric, &Common) != 1;
+        }
+        else
+        {
+            // Not allowed to reuse the numeric factorization, run the full version
+            if (Numeric)
+                klu_z_free_numeric(&Numeric, &Common);
 
+            Numeric = klu_z_factor(spmat.outerIndexPtr(), spmat.innerIndexPtr(), reinterpret_cast<double*>(spmat.valuePtr()), Symbolic, &Common);
+
+            if (Common.status == KLU_OK)
+                reuseFailed = false;
+        }
         // TODO: handle this? (from the manual)
         //   "Since this can lead to numeric instability, the use of klu
         //    rcond, klu rgrowth, or klu condest is recommended to check the
@@ -210,6 +228,7 @@ int KLUSystem::Factor()
     {
         m_fltBus = 0; // no singular submatrix was found
     }
+
     if (Common.status == KLU_OK)
     {
         // compute size of the factorization
@@ -393,10 +412,9 @@ void KLUSystem::GetElement(int iRow, int iCol, complex& cpxVal)
 
 int KLUSystem::IncrementElement(int iRow, int iCol, double re, double im)
 {
-    if (iRow > m_nBus || iCol > m_nBus)
+    if ((options < ReuseCompressedMatrix) || (iRow > m_nBus || iCol > m_nBus) || (iRow == 0 || iCol == 0))
         return 0;
-    if (iRow == 0 || iCol == 0)
-        return 0;
+
     --iRow;
     --iCol;
 
@@ -423,10 +441,9 @@ int KLUSystem::IncrementElement(int iRow, int iCol, double re, double im)
 
 int KLUSystem::ZeroiseElement(int iRow, int iCol)
 {
-    if (iRow > m_nBus || iCol > m_nBus)
+    if ((options < ReuseCompressedMatrix) || (iRow > m_nBus || iCol > m_nBus) || (iRow == 0 || iCol == 0))
         return 0;
-    if (iRow == 0 || iCol == 0)
-        return 0;
+
     --iRow;
     --iCol;
 
@@ -447,7 +464,7 @@ int KLUSystem::ZeroiseElement(int iRow, int iCol)
     rowIdxInCol = (it - it_begin);
     colData = Ax + Ap[iCol];
     colData[rowIdxInCol] = 0;
-
+    
     return 1;
 }
 

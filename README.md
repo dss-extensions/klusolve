@@ -22,7 +22,7 @@ For binary distributions, basic descriptions of the dependencies and licensing i
 ---
 
 KLUSolveX
-Copyright (c) 2017-2019, Paulo Meira
+Copyright (c) 2017-2020, Paulo Meira
 Copyright (c) 2008, EnerNex Corporation
 All rights reserved.
 
