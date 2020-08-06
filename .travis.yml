@@ -6,7 +6,7 @@ matrix:
       os: linux
       sudo: required
       env: 
-        - DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc
+        - DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc320
         - KLUSOLVE_OS=linux
         - KLUSOLVE_ARCH=x64
       services:
@@ -29,7 +29,7 @@ matrix:
       os: linux
       sudo: required
       env: 
-        - DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc_i686
+        - DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc320_i686
         - KLUSOLVE_OS=linux
         - KLUSOLVE_ARCH=x86
       services:
