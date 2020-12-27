@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Paulo Meira
+# Copyright (C) 2012-2020 Paulo Meira
 # This augmented KLUSolve CMakeLists.txt is based on a personal script to
 # build SuiteSparse on Windows
 
@@ -66,15 +66,16 @@ else ()
             STRING(REGEX REPLACE "\\\\" "/" EIGEN3_DIR ${EIGEN3_DIR})
         endif()
     ELSE()
-        IF (NOT EXISTS "${CMAKE_BINARY_DIR}/eigen-eigen-323c052e1731/Eigen/Eigen")
+        set(TARGET_EIGEN_VERSION "3.3.9")
+        IF (NOT EXISTS "${CMAKE_BINARY_DIR}/eigen-${TARGET_EIGEN_VERSION}/Eigen/Eigen")
             message(STATUS "Downloading Eigen3 source code...")
-            file(DOWNLOAD "http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz" "${CMAKE_BINARY_DIR}/eigen3.tar.gz")
+            file(DOWNLOAD "https://gitlab.com/libeigen/eigen/-/archive/${TARGET_EIGEN_VERSION}/eigen-${TARGET_EIGEN_VERSION}.tar.gz" "${CMAKE_BINARY_DIR}/eigen3.tar.gz")
             message(STATUS "Unpacking Eigen3...")
             execute_process(COMMAND ${CMAKE_COMMAND} -E tar zxf "eigen3.tar.gz" WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
         ELSE()
             message(STATUS "Eigen3 already exists, skipping download.")
         ENDIF()
-        SET(EIGEN3_DIR "${CMAKE_BINARY_DIR}/eigen-eigen-323c052e1731")
+        SET(EIGEN3_DIR "${CMAKE_BINARY_DIR}/eigen-${TARGET_EIGEN_VERSION}")
     ENDIF()
     include_directories(${EIGEN3_DIR})
 endif ()

@@ -9,6 +9,7 @@ matrix:
         - DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc320
         - KLUSOLVE_OS=linux
         - KLUSOLVE_ARCH=x64
+        - EIGEN_VERSION=3.3.9
       services:
         - docker
       install:
@@ -18,9 +19,9 @@ matrix:
         - tar zxf suitesparse.tar.gz
         - mv SuiteSparse-5.6.0 SuiteSparse
         - mv SuiteSparse ..
-        - wget http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz -O eigen3.tar.gz -q
+        - wget https://gitlab.com/libeigen/eigen/-/archive/${EIGEN_VERSION}/eigen-${EIGEN_VERSION}.tar.gz -O eigen3.tar.gz -q
         - tar zxf eigen3.tar.gz
-        - mv eigen-eigen-323c052e1731 ..
+        - mv eigen-${EIGEN_VERSION} ..
         - docker run --rm -v `pwd`/..:/io -e TRAVIS_TAG="${TRAVIS_TAG}" $DOCKER_IMAGE bash /io/klusolve/ci/build_linux_x64.sh
         - ls -lR lib
         - bash ci/pack_travis.sh
@@ -32,6 +33,7 @@ matrix:
         - DOCKER_IMAGE=pmeira/manylinux_wheel_cmake_fpc320_i686
         - KLUSOLVE_OS=linux
         - KLUSOLVE_ARCH=x86
+        - EIGEN_VERSION=3.3.9
       services:
         - docker
       install:
@@ -41,9 +43,9 @@ matrix:
         - tar zxf suitesparse.tar.gz
         - mv SuiteSparse-5.6.0 SuiteSparse
         - mv SuiteSparse ..
-        - wget http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz -O eigen3.tar.gz -q
+        - wget https://gitlab.com/libeigen/eigen/-/archive/${EIGEN_VERSION}/eigen-${EIGEN_VERSION}.tar.gz -O eigen3.tar.gz -q
         - tar zxf eigen3.tar.gz
-        - mv eigen-eigen-323c052e1731 ..
+        - mv eigen-${EIGEN_VERSION} ..
         - docker run --rm -v `pwd`/..:/io -e TRAVIS_TAG="${TRAVIS_TAG}" $DOCKER_IMAGE linux32 bash /io/klusolve/ci/build_linux_x86.sh
         - ls -lR lib
         - bash ci/pack_travis.sh
