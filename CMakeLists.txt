@@ -42,7 +42,12 @@ endif()
 
 # Best results for GCC and MSVC
 if (NOT MSVC)
-    add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
+    #TODO: test/tune for more processors
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
+        add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7") 
+    else()
+        add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops") 
+    endif()
 else()
     add_definitions("/DNDEBUG /O2 /Ot /GS- /openmp")
 endif()
