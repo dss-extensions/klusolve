@@ -47,8 +47,12 @@ endif()
 
 # Best results for GCC and MSVC, used only on the Release build
 if (NOT MSVC)
-    # set_property(GLOBAL PROPERTY COMPILE_DEFINITIONS_RELEASE "-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
-    add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7")
+    #TODO: test/tune for more processors
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
+        add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops -march=corei7") 
+    else()
+        add_definitions("-DNDEBUG -O2 -ftree-vectorize -funroll-loops") 
+    endif()
 else()
     # set_property(GLOBAL PROPERTY COMPILE_DEFINITIONS_RELEASE "/DNDEBUG /O2 /Ot /GS- /openmp")
     add_definitions("/DNDEBUG /Ot /GS- /openmp") # removed /O2 since it's the default
