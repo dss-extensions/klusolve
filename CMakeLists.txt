@@ -9,6 +9,8 @@ SET(CMAKE_RELEASE_PREFIX "")
 
 SET(USE_SYSTEM_SUITESPARSE ON CACHE BOOL "Use system SuiteSparse.")
 SET(USE_SYSTEM_EIGEN3 ON CACHE BOOL "Use system Eigen3.")
+SET(KLUSOLVE_LIB_TYPE "SHARED" CACHE STRING "Library type (SHARED or STATIC)")
+SET_PROPERTY(CACHE KLUSOLVE_LIB_TYPE PROPERTY STRINGS SHARED STATIC)
 
 string(FIND ${CMAKE_SYSTEM_PROCESSOR} "arm" IS_ARM_PROCESSOR)
 
@@ -122,13 +124,8 @@ if (USE_SYSTEM_SUITESPARSE)
         endif()
     endif()
 
-    # add_library(klusolve SHARED ${KLUSOLVE_SRC} src/klusolvex.def)
-    if (DEFINED ENV{KLU_AS_STATIC})
-        add_library(klusolve STATIC ${KLUSOLVE_SRC} src/klusolvex.def)
-    else()
-        add_library(klusolve SHARED ${KLUSOLVE_SRC} src/klusolvex.def)
-    endif()
-
+    add_library(klusolve ${KLUSOLVE_LIB_TYPE} ${KLUSOLVE_SRC} src/klusolvex.def)
+    
     target_link_libraries(klusolve ${KLU_LIBRARIES})
     include_directories(${SUITESPARSE_INCLUDE_DIR})
 else ()
@@ -270,11 +267,7 @@ else ()
 
     SET(SUITESPARSE_SRC "${SUITESPARSE_DIR}/SuiteSparse_config/SuiteSparse_config.c" ${COLAMD_GLOBAL} ${AMD_GLOBAL})
     
-    if (DEFINED ENV{KLU_AS_STATIC})
-        add_library(klusolve STATIC ${KLU_OBJS} ${SUITESPARSE_OBJS} ${SUITESPARSE_SRC} ${KLUSOLVE_SRC} src/klusolvex.def)
-    else()
-        add_library(klusolve SHARED ${KLU_OBJS} ${SUITESPARSE_OBJS} ${SUITESPARSE_SRC} ${KLUSOLVE_SRC} src/klusolvex.def)
-    endif()
+    add_library(klusolve ${KLUSOLVE_LIB_TYPE} ${KLU_OBJS} ${SUITESPARSE_OBJS} ${SUITESPARSE_SRC} ${KLUSOLVE_SRC} src/klusolvex.def)
 
     target_link_libraries(klusolve PUBLIC metis)
     include_directories(
