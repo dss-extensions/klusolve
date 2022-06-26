@@ -1,5 +1,8 @@
 # How to build
 
+This project uses a CMake script to either build the dependencies in-place, downloading them if required, or using the dependencies available on your system.
+
+The official build uses a shared library (`.dll` on Windows, `.so` on Linux). The static library support is a new adition and still not supported by DSS C-API (work in progress).
 
 Definitions:
 
@@ -13,7 +16,7 @@ Definitions:
 #../klusolve
 mkdir build
 cd build
-cmake -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -DKLUSOLVE_LIB_TYPE=STATIC .. 
+cmake -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -DKLUSOLVE_LIB_TYPE=SHARED .. 
 cmake --build . --config Release
 ```
 
