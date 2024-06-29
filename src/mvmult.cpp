@@ -1,18 +1,15 @@
 /* ------------------------------------------------------------------------- */
 /* DSS-Extensions KLUSolve (KLUSolveX)                                       */
-/* Copyright (c) 2019, Paulo Meira                                           */
+/* Copyright (c) 2019-2024, Paulo Meira                                      */
 /* Licensed under the GNU Lesser General Public License (LGPL) v 2.1         */
 /* ------------------------------------------------------------------------- */
 
 #ifdef _MSC_VER
 #if _MSC_VER <= 1500
-#include <stdint_compat.h>
-#else
-#include <cstdint>
+#error "This compiler version is not supported anymore."
 #endif
-#else
-#include <cstdint>
 #endif
+#include <cstdint>
 
 #include <Eigen/Eigen>
 #include <complex>

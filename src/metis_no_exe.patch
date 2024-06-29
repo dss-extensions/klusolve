@@ -1,0 +1,9 @@
+diff -ruN metis-5.1.0_SuiteSparse_5.6.0/CMakeLists.txt.org metis-5.1.0/CMakeLists.txt 
+--- metis-5.1.0/CMakeLists.txt.org      2024-06-29 11:26:57.559538112 -0300
++++ metis-5.1.0/CMakeLists.txt  2024-06-29 11:27:27.686993097 -0300
+@@ -24,4 +24,4 @@
+ # Recursively look for CMakeLists.txt in subdirs.
+ add_subdirectory("include")
+ add_subdirectory("libmetis")
+-add_subdirectory("programs")
++# add_subdirectory("programs")

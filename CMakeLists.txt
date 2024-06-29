@@ -1,44 +1,49 @@
-# Copyright (C) 2012-2020 Paulo Meira
+# Copyright (C) 2012-2024 Paulo Meira
+# Copyright (C) 2019-2024 DSS-Extensions contributors
 # This augmented KLUSolve CMakeLists.txt is based on a personal script to
-# build SuiteSparse on Windows
+# build SuiteSparse on Windows. This will be updated to a simpler version
+# when newer SuiteSparse versions are adopted.
 
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(klusolvex)
 SET(CMAKE_DEBUG_POSTFIX "")
 SET(CMAKE_RELEASE_PREFIX "")
 
 SET(USE_SYSTEM_SUITESPARSE ON CACHE BOOL "Use system SuiteSparse.")
-SET(USE_SYSTEM_EIGEN3 ON CACHE BOOL "Use system Eigen3.")
-SET(KLUSOLVE_LIB_TYPE "SHARED" CACHE STRING "Library type (SHARED or STATIC)")
-SET_PROPERTY(CACHE KLUSOLVE_LIB_TYPE PROPERTY STRINGS SHARED STATIC)
+SET(DSS_EXTENSIONS OFF CACHE BOOL "If building for distribution on DSS-Extensions, enable this. It tweaks the output folders.")
+SET(USE_SYSTEM_EIGEN ON CACHE BOOL "Use system Eigen3 (v3.4 recommended).")
+
+# Move fromKLUSOLVEX_LIB_TYPE to BUILD_SHARED_LIBS to simplify the build process when
+# integrating with other build tools
+option(BUILD_SHARED_LIBS "Build using shared libraries (DLL); default is ON for KLUSolveX. Set it to OFF to generate a static library." ON)
 
 string(FIND ${CMAKE_SYSTEM_PROCESSOR} "arm" IS_ARM_PROCESSOR)
 
 if((CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64") OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64"))
-    SET(KLUSOLVE_OUT_DIR_SUFFIX "arm64")
+    SET(KLUSOLVEX_OUT_DIR_SUFFIX "arm64")
 elseif(NOT ${IS_ARM_PROCESSOR} EQUAL -1)
-    SET(KLUSOLVE_OUT_DIR_SUFFIX "arm32")
+    SET(KLUSOLVEX_OUT_DIR_SUFFIX "arm32")
 elseif ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-    SET(KLUSOLVE_OUT_DIR_SUFFIX "x64")
+    SET(KLUSOLVEX_OUT_DIR_SUFFIX "x64")
 else ()
-    SET(KLUSOLVE_OUT_DIR_SUFFIX "x86")
+    SET(KLUSOLVEX_OUT_DIR_SUFFIX "x86")
 endif ()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-    SET(KLUSOLVE_OUT_DIR_PREFIX "win")
+    SET(KLUSOLVEX_OUT_DIR_PREFIX "win")
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
     set(CMAKE_CXX_STANDARD 11)
-    SET(KLUSOLVE_OUT_DIR_PREFIX "darwin")
+    SET(KLUSOLVEX_OUT_DIR_PREFIX "darwin")
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-    SET(KLUSOLVE_OUT_DIR_PREFIX "linux")
+    SET(KLUSOLVEX_OUT_DIR_PREFIX "linux")
 else ()
     MESSAGE(FATAL_ERROR "Unsupported system? ${CMAKE_SYSTEM_NAME}" )
 endif ()
 
-SET(KLUSOLVE_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/${KLUSOLVE_OUT_DIR_PREFIX}_${KLUSOLVE_OUT_DIR_SUFFIX}")
+SET(KLUSOLVEX_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/${KLUSOLVEX_OUT_DIR_PREFIX}_${KLUSOLVEX_OUT_DIR_SUFFIX}")
 add_definitions("-Dcsi=int")
 
-SET(KLUSOLVE_SRC
+SET(KLUSOLVEX_SRC
     src/KLUSolveX.cpp
     src/KLUSystemX.cpp
     src/mvmult.cpp
@@ -78,7 +83,7 @@ else ()
             STRING(REGEX REPLACE "\\\\" "/" EIGEN3_DIR ${EIGEN3_DIR})
         endif()
     ELSE()
-        set(TARGET_EIGEN_VERSION "3.3.9")
+        set(TARGET_EIGEN_VERSION "3.4.0")
         IF (NOT EXISTS "${CMAKE_BINARY_DIR}/eigen-${TARGET_EIGEN_VERSION}/Eigen/Eigen")
             message(STATUS "Downloading Eigen3 source code...")
             file(DOWNLOAD "https://gitlab.com/libeigen/eigen/-/archive/${TARGET_EIGEN_VERSION}/eigen-${TARGET_EIGEN_VERSION}.tar.gz" "${CMAKE_BINARY_DIR}/eigen3.tar.gz")
@@ -93,7 +98,7 @@ else ()
 endif ()
 
 
-if (USE_SYSTEM_SUITESPARSE)
+if(USE_SYSTEM_SUITESPARSE)
     find_path(SUITESPARSE_INCLUDE_DIR NAMES klu.h HINTS /usr/include /usr/include/suitesparse /usr/local/include /usr/local/include/suitesparse)
 
     if (NOT SUITESPARSE_INCLUDE_DIR)
@@ -124,11 +129,11 @@ if (USE_SYSTEM_SUITESPARSE)
         endif()
     endif()
 
-    add_library(klusolve ${KLUSOLVE_LIB_TYPE} ${KLUSOLVE_SRC} src/klusolvex.def)
+    add_library(klusolvex ${KLUSOLVEX_SRC} src/klusolvex.def)
     
-    target_link_libraries(klusolve ${KLU_LIBRARIES})
+    target_link_libraries(klusolvex ${KLU_LIBRARIES})
     include_directories(${SUITESPARSE_INCLUDE_DIR})
-else ()
+else()
     IF (EXISTS "$ENV{SUITESPARSE_SRC}/SuiteSparse_config/SuiteSparse_config.h")
         SET(SUITESPARSE_DIR $ENV{SUITESPARSE_SRC})
         if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
@@ -146,16 +151,20 @@ else ()
         ENDIF()
         SET(SUITESPARSE_DIR "${CMAKE_BINARY_DIR}/SuiteSparse")
     ENDIF()
+
+    find_package(Patch)
+    if(NOT Patch_FOUND)
+        message(FATAL_ERROR "Patch executable is required for METIS")
+    endif()
     if (MINGW)
         # Ideally the patch should be merged upstream, either in SuiteSparse's
         # patched code, or in the original METIS (no updates since 2013)
-        find_package(Patch)
-        if(NOT Patch_FOUND)
-            message(FATAL_ERROR "Patch executable is required for METIS")
-        endif()
         message(STATUS "${Patch_EXECUTABLE} --input=${CMAKE_CURRENT_SOURCE_DIR}/src/metis.patch WORKING_DIRECTORY ${SUITESPARSE_DIR}")
-        execute_process(COMMAND ${Patch_EXECUTABLE} "--input=${CMAKE_CURRENT_SOURCE_DIR}/src/metis.patch" "-p0" WORKING_DIRECTORY ${SUITESPARSE_DIR})
+        execute_process(COMMAND ${Patch_EXECUTABLE} "--input=${CMAKE_CURRENT_SOURCE_DIR}/src/metis.patch" "--forward" "-p0" WORKING_DIRECTORY ${SUITESPARSE_DIR})
     endif()
+    # Disable building METIS executables
+    message(STATUS "${Patch_EXECUTABLE} --input=${CMAKE_CURRENT_SOURCE_DIR}/src/metis_no_exe.patch WORKING_DIRECTORY ${SUITESPARSE_DIR}")
+    execute_process(COMMAND ${Patch_EXECUTABLE} "--input=${CMAKE_CURRENT_SOURCE_DIR}/src/metis_no_exe.patch" "--forward" "-p0" WORKING_DIRECTORY ${SUITESPARSE_DIR})
 
     # METIS
     set(GKLIB_PATH "${SUITESPARSE_DIR}/metis-5.1.0/GKlib" CACHE PATH "Forced GKLIB path fix" FORCE)
@@ -190,6 +199,7 @@ else ()
     add_library(AMD_L OBJECT ${AMD_TEMPLATE_SRC})
     add_library(COLAMD_L OBJECT ${COLAMD_TEMPLATE_SRC})
     add_library(BTF_L OBJECT ${BTF_TEMPLATE_SRC})
+
     target_compile_options(AMD_L PRIVATE "-DDLONG")
     target_compile_options(COLAMD_L PRIVATE "-DDLONG")
     target_compile_options(BTF_L PRIVATE "-DDLONG")
@@ -206,7 +216,6 @@ else ()
         $<TARGET_OBJECTS:COLAMD_L>
         $<TARGET_OBJECTS:BTF_L>
     )
-
 
     #KLU
     set(KLU_SRC "${SUITESPARSE_DIR}/KLU/Source")
@@ -233,14 +242,14 @@ else ()
         "${KLU_SRC}/klu_memory.c"
     )
 
-    # add_library(KLU_D OBJECT ${KLU_TEMPLATE_SRC})
+    add_library(KLU_D OBJECT ${KLU_TEMPLATE_SRC})
     add_library(KLU_Z OBJECT ${KLU_TEMPLATE_SRC})
     # add_library(KLU_ZL OBJECT ${KLU_TEMPLATE_SRC})
     # add_library(KLU_DL OBJECT ${KLU_TEMPLATE_SRC})
     add_library(KLU_I OBJECT ${KLU_COMMON_SRC})
     add_library(KLU_L OBJECT ${KLU_COMMON_SRC})
     
-    # target_compile_options(KLU_D PRIVATE -DDINT)
+    target_compile_options(KLU_D PRIVATE -DDINT)
     target_compile_options(KLU_Z PRIVATE -DCOMPLEX -DDINT)
     # target_compile_options(KLU_ZL PRIVATE -DCOMPLEX -DDLONG)
     # target_compile_options(KLU_DL PRIVATE -DDLONG)
@@ -248,10 +257,13 @@ else ()
 
     set(
         KLU_OBJS 
+        $<TARGET_OBJECTS:KLU_D>
         $<TARGET_OBJECTS:KLU_Z>
         $<TARGET_OBJECTS:KLU_I>
         $<TARGET_OBJECTS:KLU_L>
     )
+
+    set(KLU_TARGETS AMD_I COLAMD_I BTF_I AMD_L COLAMD_L BTF_L metis KLU_D KLU_Z KLU_I KLU_L)
 
     if (NOT MSVC)
         if (APPLE)
@@ -267,9 +279,9 @@ else ()
 
     SET(SUITESPARSE_SRC "${SUITESPARSE_DIR}/SuiteSparse_config/SuiteSparse_config.c" ${COLAMD_GLOBAL} ${AMD_GLOBAL})
     
-    add_library(klusolve ${KLUSOLVE_LIB_TYPE} ${KLU_OBJS} ${SUITESPARSE_OBJS} ${SUITESPARSE_SRC} ${KLUSOLVE_SRC} src/klusolvex.def)
+    add_library(klusolvex ${KLU_OBJS} ${SUITESPARSE_OBJS} ${SUITESPARSE_SRC} ${KLUSOLVEX_SRC} src/klusolvex.def)
 
-    target_link_libraries(klusolve PUBLIC metis)
+    target_link_libraries(klusolvex PUBLIC metis)
     include_directories(
         "${SUITESPARSE_DIR}/AMD/Include/"
         "${SUITESPARSE_DIR}/COLAMD/Include/"
@@ -279,21 +291,32 @@ else ()
         "${SUITESPARSE_DIR}/SuiteSparse_config/Include"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/"
     )
-endif (USE_SYSTEM_SUITESPARSE)
+endif(USE_SYSTEM_SUITESPARSE)
 
-if (MSVC)
-    set_target_properties(klusolve PROPERTIES OUTPUT_NAME libklusolvex)
-else ()
-    set_target_properties(klusolve PROPERTIES OUTPUT_NAME klusolvex)
-endif ()
+if(MSVC)
+    set_target_properties(klusolvex PROPERTIES OUTPUT_NAME libklusolvex)
+    set_target_properties(klusolvex PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    # We don't need .EXP files, clutter...
+    set(CMAKE_SHARED_LINKER_FLAGS "/NOEXP")
 
-set_target_properties(klusolve PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})
-set_target_properties(klusolve PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})
-set_target_properties(klusolve PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${KLUSOLVE_OUT_DIR})
+    foreach(_tgt ${KLU_TARGETS})
+        set_target_properties(${_tgt} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endforeach()
+else()
+    set_target_properties(klusolvex PROPERTIES OUTPUT_NAME klusolvex)
+endif()
 
-if (MSVC)
-    # Force the Release output to be in the expected folder
-    set_target_properties(klusolve PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
-    set_target_properties(klusolve PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
-    set_target_properties(klusolve PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVE_OUT_DIR})
-endif ()
+if(DSS_EXTENSIONS)
+    set_target_properties(klusolvex PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${KLUSOLVEX_OUT_DIR})
+    set_target_properties(klusolvex PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${KLUSOLVEX_OUT_DIR})
+    set_target_properties(klusolvex PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${KLUSOLVEX_OUT_DIR})
+
+    if(MSVC)
+        # Force the Release output to be in the expected folder
+        set_target_properties(klusolvex PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVEX_OUT_DIR})
+        set_target_properties(klusolvex PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVEX_OUT_DIR})
+        set_target_properties(klusolvex PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${KLUSOLVEX_OUT_DIR})
+    endif()
+endif()
+
+target_include_directories(klusolvex PUBLIC include)

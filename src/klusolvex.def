@@ -26,3 +26,5 @@ EXPORTS
  ZeroiseMatrixElement @23
  klusolve_metis @24
  SetOptions @25
+ SetMatrixElement @26
+ SaveAsMarketFiles @27

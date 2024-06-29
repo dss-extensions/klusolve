@@ -1,26 +1,27 @@
 /* ------------------------------------------------------------------------- */
 /* DSS-Extensions KLUSolve (KLUSolveX)                                       */
-/* Copyright (c) 2019-2020, Paulo Meira                                      */
+/* Copyright (c) 2019-2024, Paulo Meira                                      */
 /* Based on KLUSolve, Copyright (c) 2008, EnerNex Corporation                */
 /* All rights reserved.                                                      */
 /* Licensed under the GNU Lesser General Public License (LGPL) v 2.1         */
 /* ------------------------------------------------------------------------- */
 
-#ifndef dssx_klusystem_included
-#define dssx_klusystem_included
+#ifndef DSS_EXTENSIONS_KLUSYSTEMX_H
+#define DSS_EXTENSIONS_KLUSYSTEMX_H
 
-#include <Eigen/SparseCore>
-
-#include "klu.h"
 #include "KLUSolveX.h"
+#include <Eigen/SparseCore>
+#include "klu.h"
+
+namespace KLUSolveX {
 
 typedef std::complex<double> complex;
 
 struct matrix_complex
 {
     complex* acx;
-    int nRow, nCol;
-    complex get_acx(int i, int j)
+    unsigned int nRow, nCol;
+    complex get_acx(unsigned int i, unsigned int j)
     {
         return acx[i * nCol + j];
     }
@@ -34,14 +35,20 @@ KLU manages complex values as interleaved real/imag in double arrays
 KLU arrays are zero-based
 */
 
-class KLUSystem
+class KLUSystemX
 {
 public:
     typedef Eigen::SparseMatrix<complex> SparseMatrix;
+    typedef Eigen::SparseMatrix<double> SparseMatrixF64;
+    typedef Eigen::SparseMatrix<float> SparseMatrixF32;
+    typedef Eigen::SparseMatrix<std::complex<float>> SparseMatrixC64;
 
-private:
     // admittance matrix blocks in compressed-column storage, like Matlab
     SparseMatrix spmat;
+    SparseMatrixF64 spmat_f64;
+    SparseMatrixF32 spmat_f32;
+    SparseMatrixC64 spmat_c64;
+
     std::vector<Eigen::Triplet<complex> > triplets;
     std::vector<complex> acx;
 
@@ -61,13 +68,12 @@ private:
     void NullPointers();
     void ProcessTriplets();
  
-
-public:
-    KLUSystem();
-    KLUSystem(int nBus, int nV = 0, int nI = 0);
-    ~KLUSystem();
+    KLUSystemX();
+    KLUSystemX(unsigned int nBus, unsigned int nV = 0, unsigned int nI = 0);
+    ~KLUSystemX();
 
     uint64_t options; // KLUSolveX options, currently limited to values in enum ReuseFlags
+    uint32_t dataFormat;
     
     bool bFactored; //  system has been factored
     bool reuseSymbolic; // current state, actual reuse depends on options
@@ -76,7 +82,7 @@ public:
     void SolveSystem(complex* acxX, complex* acxB);
     
     // this resets and reinitializes the sparse matrix, nI = nBus
-    int Initialize(int nBus, int nV = 0, int nI = 0);
+    int Initialize(unsigned int nBus, unsigned int nV = 0, unsigned int nI = 0);
 
     uint32_t GetSize() { return m_nBus; }
 
@@ -114,7 +120,7 @@ public:
     // returns the number of connected components (cliques) in the whole system graph
     //  (i.e., considers Y11, Y12, and Y21 in addition to Y22)
     // store the island number (1-based) for each node in idClique
-    int FindIslands(int* idClique);
+    int FindIslands(unsigned int* idClique);
 
     // returns the row > 0 if a zero appears on the diagonal
     // calls Factor if necessary
@@ -125,18 +131,21 @@ public:
     // maintains allocations, zeros matrix values
     void zero();
     
-    void AddElement(int iRow, int iCol, complex& cpxVal, int);
+    void AddElement(unsigned int iRow, unsigned int iCol, complex& cpxVal, int);
     // return the sum of elements at 1-based [iRow, iCol]
-    void GetElement(int iRow, int iCol, complex& cpxVal);
+    void GetElement(unsigned int iRow, unsigned int iCol, complex& cpxVal);
     // for OpenDSS, return 1 for success
-    int AddPrimitiveMatrix(int nOrder, int* pNodes, complex* pMat);
+    int AddPrimitiveMatrix(unsigned int nOrder, unsigned int* pNodes, complex* pMat);
 
     // return in compressed triplet form, return 1 for success, 0 for a size mismatch
-    int GetCompressedMatrix(int nColP, int nNZ, int* pColP, int* pRowIdx, complex* pMat);
-    int GetTripletMatrix(int nNZ, int* pRows, int* pCols, complex* pMat);
+    int GetCompressedMatrix(unsigned int nColP, unsigned int nNZ, unsigned int* pColP, unsigned int* pRowIdx, complex* pMat);
+    int GetTripletMatrix(unsigned int nNZ, unsigned int* pRows, unsigned int* pCols, complex* pMat);
     
-    int IncrementElement(int iRow, int iCol, double re, double im);
-    int ZeroiseElement(int iRow, int iCol);
+    int IncrementElement(unsigned int iRow, unsigned int iCol, double re, double im);
+    int ZeroiseElement(unsigned int iRow, unsigned int iCol);
+    int SaveAsMarketFiles(const char* fileNameMatrix, const double *b, const char* fileNameVector);
 };
 
-#endif // dssx_klusystem_included
+} // namespace KLUSolveX
+
+#endif // #ifndef DSS_EXTENSIONS_KLUSYSTEMX_H

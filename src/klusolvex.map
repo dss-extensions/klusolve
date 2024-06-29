@@ -1,4 +1,4 @@
-LIBKLUSOLVEX_1.0 {
+LIBKLUSOLVEX_1.1 {
 global:
     NewSparseSet;
     GetFlops;
@@ -7,6 +7,7 @@ global:
     SolveSparseSet;
     DeleteSparseSet;
     AddMatrixElement;
+    SetMatrixElement;
     GetSize;
     SetLogFile;
     GetNNZ;
@@ -25,6 +26,7 @@ global:
     ZeroiseMatrixElement;
     klusolve_metis;
     SetOptions;
+    SaveAsMarketFiles;
 local:
     *;
 };

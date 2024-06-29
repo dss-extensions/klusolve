@@ -15,7 +15,7 @@ mkdir c:\projects\klusolve\build
 cd c:\projects\klusolve\build
 
 set path=%ADD_THIS_TO_PATH%;%path%
-cmake .. -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF -G"%CMAKE_GENERATOR%" %CMAKE_EXTRA%
+cmake ..  -DDSS_EXTENSIONS=ON -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN=OFF -G"%CMAKE_GENERATOR%" %CMAKE_EXTRA%
 cmake --build . --config Release
 
 REM Copy dependency DLLs

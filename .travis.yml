@@ -59,7 +59,7 @@ matrix:
       script: 
         - mkdir build
         - cd build
-        - cmake -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN3=OFF ..
+        - cmake -DDSS_EXTENSIONS=ON -DUSE_SYSTEM_SUITESPARSE=OFF -DUSE_SYSTEM_EIGEN=OFF ..
         - cmake --build . --config Release
         - cd ..
         - file lib/darwin_x64/libklusolvex.dylib

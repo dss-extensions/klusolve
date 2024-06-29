@@ -5,15 +5,18 @@
 
 # DSS-Extensions: KLUSolveX
 
-This is a fork of **KLUSolve** used by DSS C-API. See the original at [SourceForge](https://sourceforge.net/p/klusolve/code/HEAD/tree/). As explicit in `LICENSE`, this work uses the same license, LGPL 2.1 or later.
+This is a fork of **KLUSolve** initially intended for AltDSS/DSS C-API.
+See the original at [SourceForge](https://sourceforge.net/p/klusolve/code/HEAD/tree/). As explicit in `LICENSE`, this work uses the same license, LGPL 2.1 or later.
+
+In version 1.1, we restored compatibility for Windows x86 (32-bit) builds, using the same calling convention as the original KLUSolve (`__stdcall`). The other builds were already compatible.
 
 Changes include:
-- Uses a CMake building script. **Note**: this was added long before CMake was used in the original KLUSolve. Our script is not based on the one in the KLUSolve repository, and it is more general, resulting in a cleaner repository.
+- Uses a CMake building script. **Note**: this was added long before CMake was used in the original KLUSolve or SuiteSparse. Our script is not based on the one in the KLUSolve repository, and it is more general, resulting in a cleaner repository.
 - Uses either system SuiteSparse libraries (when compatible) or downloads upstream SuiteSparse source-code. The SuiteSparse source code is not included in the KLUSolveX repository anymore.
 - Adds a dependency on [Eigen](http://eigen.tuxfamily.org/), dropping the customized CZSparse.
 - Introduces some dense matrix functions (e.g. `mvmult`) to be used in the [DSS C-API](https://github.com/dss-extensions/dss_capi/), an alternative [OpenDSS](sf.net/p/electricdss) library, for better performance.
 - Introduces reuse of the symbolic and numeric factorization steps from KLU when the sparse matrix is unchanged.
-- Changes calling convention to CDECL on Windows -- so far this is the only change that breaks compatibility with KLUSolve. 
+- Changes calling convention to CDECL on Windows -- so far this is the only change that breaks compatibility with KLUSolve (and affects only 32-bit builds).
 
 For binary distributions, basic descriptions of the dependencies and licensing information is reproduced below. When building from source, be sure to check the licenses of the components.
 
@@ -33,9 +36,9 @@ Since we don't include the code for KLU or SuiteSparse in this repository anymor
 
 KLUSolveX
 
-Copyright (c) 2017-2020, Paulo Meira
+Copyright (c) 2017-2024, Paulo Meira
 
-Copyright (c) 2019-2022, DSS Extensions contributors
+Copyright (c) 2019-2024, DSS Extensions contributors
 
 Copyright (c) 2008, EnerNex Corporation
 
