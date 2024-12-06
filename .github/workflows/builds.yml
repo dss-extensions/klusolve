@@ -1,0 +1,170 @@
+name: Builds
+
+#TODO: Linux ARM64, Windows ARM64
+
+on: 
+  # release:
+  #   types: [created]
+  push:
+
+jobs:
+  build_linux:
+    name: 'Linux variants'
+    strategy:
+      matrix:
+        include:
+          - arch: x64
+            docker_image: 'pmeira/manylinux_wheel_fpc322_x86_64'
+            extra_cmake_flags: ''
+            klusolve_linux32: ''
+          - arch: x86
+            docker_image: 'pmeira/manylinux_wheel_fpc322_i686'
+            extra_cmake_flags: '-DCMAKE_CXX_COMPILER_ARG1=-m32 -DCMAKE_C_COMPILER_ARG1=-m32'
+            klusolve_linux32: linux32
+
+    runs-on: ubuntu-latest
+    env:
+      KLUSOLVE_OS: linux
+      EIGEN_VERSION : "3.4.0"
+      DOCKER_IMAGE: ${{ matrix.docker_image }}
+      KLUSOLVE_ARCH: ${{ matrix.arch }}
+      KLUSOLVE_EXTRA_CMAKE_FLAGS: ${{ matrix.extra_cmake_flags }}
+      KLUSOLVE_LINUX32: ${{ matrix.klusolve_linux32 }}
+    steps: 
+      - uses: "actions/checkout@v4"
+        with: 
+          fetch-depth: 0
+          path: 'klusolve'
+
+      - name: 'Setup Docker'
+        run: |
+          docker pull $DOCKER_IMAGE
+
+      - name: 'Download dependencies'
+        run: |
+          klusolve/ci/download_deps.sh
+
+      - name: Build
+        run: |
+          docker run --rm -v `pwd`:/io -e KLUSOLVE_WORK_DIR=/io -e GITHUB_REF -e KLUSOLVE_OS -e KLUSOLVE_ARCH -e EIGEN_VERSION -e KLUSOLVE_EXTRA_CMAKE_FLAGS $DOCKER_IMAGE ${KLUSOLVE_LINUX32} bash /io/klusolve/ci/build_unix.sh
+          cd klusolve
+          ls -lR lib
+          bash ci/pack.sh
+
+      - name: 'Upload artifacts'
+        uses: "actions/upload-artifact@v4"
+        #if: github.event_name == 'release' && github.event.action == 'created'
+        with:
+          name: 'development-build-linux_${{ matrix.arch }}'
+          path: '${{ github.workspace }}/klusolve/release/*.tar.gz'
+
+
+  build_macos:
+    name: 'macOS variants'
+    strategy:
+      matrix:
+        include:
+          - os: macos-13
+            arch: x64
+          - os: macos-latest
+            arch: arm64
+
+    runs-on: ${{ matrix.os }}
+    env:
+      KLUSOLVE_OS: darwin
+      KLUSOLVE_ARCH: ${{ matrix.arch }}
+      EIGEN_VERSION : "3.4.0"
+    steps:
+      - uses: "actions/checkout@v4"
+        with: 
+          fetch-depth: 0
+          path: 'klusolve'
+
+      - name: Download dependencies
+        run: |
+          klusolve/ci/download_deps.sh
+          
+      - name: Build
+        run: |
+          export KLUSOLVE_WORK_DIR=`pwd`
+          bash klusolve/ci/build_unix.sh
+          cd ${KLUSOLVE_WORK_DIR}/klusolve
+          ls -lR lib
+          bash ci/pack.sh
+
+      - name: 'Upload artifacts'
+        uses: "actions/upload-artifact@v4"
+        #if: github.event_name == 'release' && github.event.action == 'created'
+        with:
+          name: 'development-build-darwin-${{matrix.os}}'
+          path: '${{ github.workspace }}/klusolve/release/*.tar.gz'
+
+
+  build_windows:
+    name: 'Windows variants'
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+        arch: ['x64', 'x86']
+        compiler: ['msvc', 'gcc']
+        exclude:
+          # We don't need to build the same exact binary twice with GCC (since we install MinGW manually)
+          - os: windows-2022
+            compiler: gcc
+            arch: x86
+
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+    env: 
+      KLUSOLVE_OS: windows
+      KLUSOLVE_OS_IMAGE: ${{ matrix.os }}
+      KLUSOLVE_ARCH: ${{ matrix.arch }}
+      KLUSOLVE_COMPILER: ${{ matrix.compiler }}
+      EIGEN_VERSION: "3.4.0"
+    steps:
+      - uses: "actions/checkout@v4"
+        with: 
+          fetch-depth: 0
+          path: 'klusolve'
+
+      - name: 'Download dependencies'
+        shell: bash
+        run: |
+          bash klusolve/ci/download_deps.sh
+
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        if: matrix.arch == 'x86' && matrix.compiler == 'gcc'
+        with:
+          platform: x86
+          version: 12.2.0
+          
+      - name: Build
+        shell: cmd
+        run: |
+          cd klusolve
+          ci\build_win.bat
+
+      - name: Pack
+        shell: bash
+        run: |
+          cd klusolve
+          bash ci/pack.sh
+
+      - name: 'Upload artifacts'
+        uses: "actions/upload-artifact@v4"
+        #if: github.event_name == 'release' && github.event.action == 'created'
+        with:
+          name: 'development-build-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.compiler }}'
+          path: '${{ github.workspace }}/klusolve/release/*.zip'
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: [build_linux, build_macos, build_windows]
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: development-build
+          pattern: development-build-*
