@@ -15,11 +15,10 @@ Changes include:
 - Adds a dependency on [Eigen](http://eigen.tuxfamily.org/), dropping the customized CZSparse.
 - Introduces some dense matrix functions (e.g. `mvmult`) to be used in the [DSS C-API](https://github.com/dss-extensions/dss_capi/), an alternative [OpenDSS](sf.net/p/electricdss) library, for better performance.
 - Introduces reuse of the symbolic and numeric factorization steps from KLU when the sparse matrix is unchanged.
-- Changes calling convention to CDECL on Windows -- so far this is the only change that breaks compatibility with KLUSolve (and affects only 32-bit builds).
 
 For binary distributions, basic descriptions of the dependencies and licensing information is reproduced below. When building from source, be sure to check the licenses of the components.
 
-**Currently tested with Eigen 3.3.7 and SuiteSparse 5.6.0.**
+**Currently tested with Eigen 3.4.0 and SuiteSparse 5.6.0.** KLU, which is distributed in SuiteSparse, is very stable, so this library should be forward compatible. We will eventually integrate with the current SuiteSparse (CMake) build setup, but for now our build scripts provide a more streamlined setup when building from source.
 
 # Credits / Acknowledgment
 
