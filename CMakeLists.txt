@@ -6,14 +6,17 @@
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(klusolvex)
-SET(CMAKE_DEBUG_POSTFIX "")
-SET(CMAKE_RELEASE_PREFIX "")
+
+if(DSS_EXTENSIONS)
+    SET(CMAKE_DEBUG_POSTFIX "d")
+    SET(CMAKE_RELEASE_PREFIX "")
+endif()
 
 SET(USE_SYSTEM_SUITESPARSE ON CACHE BOOL "Use system SuiteSparse.")
 SET(DSS_EXTENSIONS OFF CACHE BOOL "If building for distribution on DSS-Extensions, enable this. It tweaks the output folders.")
 SET(USE_SYSTEM_EIGEN ON CACHE BOOL "Use system Eigen3 (v3.4 recommended).")
 
-# Move fromKLUSOLVEX_LIB_TYPE to BUILD_SHARED_LIBS to simplify the build process when
+# Moved from KLUSOLVEX_LIB_TYPE to BUILD_SHARED_LIBS to simplify the build process when
 # integrating with other build tools
 option(BUILD_SHARED_LIBS "Build using shared libraries (DLL); default is ON for KLUSolveX. Set it to OFF to generate a static library." ON)
 
@@ -40,7 +43,7 @@ else ()
     MESSAGE(FATAL_ERROR "Unsupported system? ${CMAKE_SYSTEM_NAME}" )
 endif ()
 
-SET(KLUSOLVEX_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/${KLUSOLVEX_OUT_DIR_PREFIX}_${KLUSOLVEX_OUT_DIR_SUFFIX}")
+SET(KLUSOLVEX_OUT_DIR "${CMAKE_SOURCE_DIR}/lib/${KLUSOLVEX_OUT_DIR_PREFIX}_${KLUSOLVEX_OUT_DIR_SUFFIX}")
 add_definitions("-Dcsi=int")
 
 SET(KLUSOLVEX_SRC
@@ -185,7 +188,6 @@ else()
 
     #SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
     add_definitions("-DSUITESPARSE_DLLEXPORT=__declspec(dllexport)")
-    set(CMAKE_DEBUG_POSTFIX "d")
 
     file(GLOB AMD_TEMPLATE_SRC "${SUITESPARSE_DIR}/AMD/Source/*.c")
     file(GLOB COLAMD_TEMPLATE_SRC "${SUITESPARSE_DIR}/COLAMD/Source/*.c")
