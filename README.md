@@ -1,5 +1,4 @@
-[![Travis-CI: Linux/macOS build Status](https://travis-ci.com/dss-extensions/klusolve.svg?branch=master)](https://travis-ci.com/dss-extensions/klusolve)
-[![AppVeyor: Windows build status](https://ci.appveyor.com/api/projects/status/k87v4udm4paiykap/branch/master?svg=true)](https://ci.appveyor.com/project/PMeira/klusolve/branch/master)
+[![Builds](https://github.com/dss-extensions/klusolve/actions/workflows/builds.yml/badge.svg)](https://github.com/dss-extensions/klusolve/actions/workflows/builds.yml)
 
 ---
 
