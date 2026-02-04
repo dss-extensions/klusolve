@@ -18,7 +18,7 @@ Changes include:
 
 For binary distributions, basic descriptions of the dependencies and licensing information is reproduced below. When building from source, be sure to check the licenses of the components.
 
-**Currently tested with Eigen 3.4.0 and SuiteSparse 5.6.0.** KLU, which is distributed in SuiteSparse, is very stable, so this library should be forward compatible. We will eventually integrate with the current SuiteSparse (CMake) build setup, but for now our build scripts provide a more streamlined setup when building from source.
+**Currently tested with Eigen 5.0.0 and SuiteSparse 5.6.0.** KLU, which is distributed in SuiteSparse, is very stable, so this library should be forward compatible. We will eventually integrate with the current SuiteSparse (CMake) build setup, but for now our build scripts provide a more streamlined setup when building from source.
 
 # Credits / Acknowledgment
 
@@ -34,9 +34,9 @@ Since we don't include the code for KLU or SuiteSparse in this repository anymor
 
 KLUSolveX
 
-Copyright (c) 2017-2024, Paulo Meira
+Copyright (c) 2017-2026, Paulo Meira
 
-Copyright (c) 2019-2024, DSS Extensions contributors
+Copyright (c) 2019-2026, DSS-Extensions contributors
 
 Copyright (c) 2008, EnerNex Corporation
 
