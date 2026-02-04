@@ -1,5 +1,5 @@
-# Copyright (C) 2012-2024 Paulo Meira
-# Copyright (C) 2019-2024 DSS-Extensions contributors
+# Copyright (C) 2012-2026 Paulo Meira
+# Copyright (C) 2019-2026 DSS-Extensions contributors
 # This augmented KLUSolve CMakeLists.txt is based on a personal script to
 # build SuiteSparse on Windows. This will be updated to a simpler version
 # when newer SuiteSparse versions are adopted.
@@ -14,7 +14,7 @@ endif()
 
 SET(USE_SYSTEM_SUITESPARSE ON CACHE BOOL "Use system SuiteSparse.")
 SET(DSS_EXTENSIONS OFF CACHE BOOL "If building for distribution on DSS-Extensions, enable this. It tweaks the output folders.")
-SET(USE_SYSTEM_EIGEN ON CACHE BOOL "Use system Eigen3 (v3.4 recommended).")
+SET(USE_SYSTEM_EIGEN ON CACHE BOOL "Use system Eigen3 (v5.0 recommended).")
 
 # Moved from KLUSOLVEX_LIB_TYPE to BUILD_SHARED_LIBS to simplify the build process when
 # integrating with other build tools
@@ -35,7 +35,7 @@ endif ()
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     SET(KLUSOLVEX_OUT_DIR_PREFIX "win")
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 14)
     SET(KLUSOLVEX_OUT_DIR_PREFIX "darwin")
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     SET(KLUSOLVEX_OUT_DIR_PREFIX "linux")
@@ -57,7 +57,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.4)
-        set (CMAKE_CXX_STANDARD 11)
+        set (CMAKE_CXX_STANDARD 14)
     endif()
 endif()
 
@@ -86,14 +86,14 @@ else ()
             STRING(REGEX REPLACE "\\\\" "/" EIGEN3_DIR ${EIGEN3_DIR})
         endif()
     ELSE()
-        set(TARGET_EIGEN_VERSION "3.4.0")
+        set(TARGET_EIGEN_VERSION "5.0.0")
         IF (NOT EXISTS "${CMAKE_BINARY_DIR}/eigen-${TARGET_EIGEN_VERSION}/Eigen/Eigen")
-            message(STATUS "Downloading Eigen3 source code...")
-            file(DOWNLOAD "https://gitlab.com/libeigen/eigen/-/archive/${TARGET_EIGEN_VERSION}/eigen-${TARGET_EIGEN_VERSION}.tar.gz" "${CMAKE_BINARY_DIR}/eigen3.tar.gz")
-            message(STATUS "Unpacking Eigen3...")
-            execute_process(COMMAND ${CMAKE_COMMAND} -E tar zxf "eigen3.tar.gz" WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+            message(STATUS "Downloading Eigen source code...")
+            file(DOWNLOAD "https://gitlab.com/libeigen/eigen/-/archive/${TARGET_EIGEN_VERSION}/eigen-${TARGET_EIGEN_VERSION}.tar.gz" "${CMAKE_BINARY_DIR}/eigen.tar.gz")
+            message(STATUS "Unpacking Eigen...")
+            execute_process(COMMAND ${CMAKE_COMMAND} -E tar zxf "eigen.tar.gz" WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
         ELSE()
-            message(STATUS "Eigen3 already exists, skipping download.")
+            message(STATUS "Eigen already exists, skipping download.")
         ENDIF()
         SET(EIGEN3_DIR "${CMAKE_BINARY_DIR}/eigen-${TARGET_EIGEN_VERSION}")
     ENDIF()

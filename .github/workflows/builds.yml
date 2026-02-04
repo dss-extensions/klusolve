@@ -1,6 +1,6 @@
 name: Builds
 
-#TODO: Linux ARM64, Windows ARM64
+#TODO: Windows ARM64
 
 on: 
   # release:
@@ -17,15 +17,22 @@ jobs:
             docker_image: 'pmeira/manylinux_wheel_fpc322_x86_64'
             extra_cmake_flags: ''
             klusolve_linux32: ''
+            gh_image: ubuntu-latest
           - arch: x86
             docker_image: 'pmeira/manylinux_wheel_fpc322_i686'
             extra_cmake_flags: '-DCMAKE_CXX_COMPILER_ARG1=-m32 -DCMAKE_C_COMPILER_ARG1=-m32'
             klusolve_linux32: linux32
+            gh_image: ubuntu-latest
+          - arch: arm64
+            docker_image: 'pmeira/manylinux_wheel_fpc322_aarch64'
+            extra_cmake_flags: ''
+            klusolve_linux32: ''
+            gh_image: ubuntu-24.04-arm
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.gh_image }}
     env:
       KLUSOLVE_OS: linux
-      EIGEN_VERSION : "3.4.0"
+      EIGEN_VERSION : "5.0.0"
       DOCKER_IMAGE: ${{ matrix.docker_image }}
       KLUSOLVE_ARCH: ${{ matrix.arch }}
       KLUSOLVE_EXTRA_CMAKE_FLAGS: ${{ matrix.extra_cmake_flags }}
@@ -64,16 +71,19 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-13
+          - os: macos-15-intel
             arch: x64
+            extra_cmake_flags: '-DCMAKE_POLICY_VERSION_MINIMUM=3.5'
           - os: macos-latest
             arch: arm64
+            extra_cmake_flags: '-DCMAKE_POLICY_VERSION_MINIMUM=3.5'
 
     runs-on: ${{ matrix.os }}
     env:
       KLUSOLVE_OS: darwin
       KLUSOLVE_ARCH: ${{ matrix.arch }}
-      EIGEN_VERSION : "3.4.0"
+      EIGEN_VERSION : "5.0.0"
+      KLUSOLVE_EXTRA_CMAKE_FLAGS: ${{ matrix.extra_cmake_flags }}
     steps:
       - uses: "actions/checkout@v4"
         with: 
@@ -121,7 +131,7 @@ jobs:
       KLUSOLVE_OS_IMAGE: ${{ matrix.os }}
       KLUSOLVE_ARCH: ${{ matrix.arch }}
       KLUSOLVE_COMPILER: ${{ matrix.compiler }}
-      EIGEN_VERSION: "3.4.0"
+      EIGEN_VERSION: "5.0.0"
     steps:
       - uses: "actions/checkout@v4"
         with: 
