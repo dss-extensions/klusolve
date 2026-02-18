@@ -18,7 +18,7 @@ if "%KLUSOLVE_COMPILER%"=="gcc" (
 )
 
 if "%KLUSOLVE_COMPILER%"=="msvc" (
-    if "%KLUSOLVE_OS_IMAGE%"=="x86" (
+    if "%KLUSOLVE_ARCH%"=="x86" (
         set CMAKE_EXTRA=-A Win32
     )
     if "%KLUSOLVE_OS_IMAGE%"=="windows-2019" (
