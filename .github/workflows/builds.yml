@@ -73,10 +73,10 @@ jobs:
         include:
           - os: macos-15-intel
             arch: x64
-            extra_cmake_flags: '-DCMAKE_POLICY_VERSION_MINIMUM=3.5'
-          - os: macos-latest
+            extra_cmake_flags: '-DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0'
+          - os: macos-15
             arch: arm64
-            extra_cmake_flags: '-DCMAKE_POLICY_VERSION_MINIMUM=3.5'
+            extra_cmake_flags: '-DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0'
 
     runs-on: ${{ matrix.os }}
     env:
@@ -84,6 +84,8 @@ jobs:
       KLUSOLVE_ARCH: ${{ matrix.arch }}
       EIGEN_VERSION : "5.0.0"
       KLUSOLVE_EXTRA_CMAKE_FLAGS: ${{ matrix.extra_cmake_flags }}
+      MACOSX_DEPLOYMENT_TARGET: '11.0'
+
     steps:
       - uses: "actions/checkout@v4"
         with: 
